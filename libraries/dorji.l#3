@@ -126,24 +126,24 @@
 <wire x1="35.6" y1="11" x2="35.6" y2="12.8" width="0.3048" layer="21" curve="-180"/>
 <wire x1="35.6" y1="15.5" x2="35.6" y2="17.3" width="0.3048" layer="21" curve="-180"/>
 <wire x1="35.6" y1="19.1" x2="35.6" y2="17.3" width="0.3048" layer="21"/>
-<smd name="P$1" x="4.2" y="20.5" dx="5.08" dy="2.54" layer="1" rot="R90"/>
-<smd name="P$2" x="8.9" y="20.5" dx="5.08" dy="2.54" layer="1" rot="R90"/>
-<smd name="P$3" x="13.3" y="20.5" dx="5.08" dy="2.54" layer="1" rot="R90"/>
-<smd name="P$4" x="17.8" y="20.5" dx="5.08" dy="2.54" layer="1" rot="R90"/>
-<smd name="P$5" x="22.2" y="20.5" dx="5.08" dy="2.54" layer="1" rot="R90"/>
-<smd name="P$6" x="26.7" y="20.5" dx="5.08" dy="2.54" layer="1" rot="R90"/>
-<smd name="P$7" x="31.1" y="20.5" dx="5.08" dy="2.54" layer="1" rot="R90"/>
-<smd name="P$8" x="4.2" y="-1.4" dx="5.08" dy="2.54" layer="1" rot="R90"/>
-<smd name="P$9" x="8.9" y="-1.4" dx="5.08" dy="2.54" layer="1" rot="R90"/>
-<smd name="P$10" x="13.3" y="-1.4" dx="5.08" dy="2.54" layer="1" rot="R90"/>
-<smd name="P$11" x="17.8" y="-1.4" dx="5.08" dy="2.54" layer="1" rot="R90"/>
-<smd name="P$12" x="22.2" y="-1.4" dx="5.08" dy="2.54" layer="1" rot="R90"/>
-<smd name="P$13" x="26.7" y="-1.4" dx="5.08" dy="2.54" layer="1" rot="R90"/>
-<smd name="P$14" x="31.1" y="-1.4" dx="5.08" dy="2.54" layer="1" rot="R90"/>
-<smd name="P$15" x="37" y="16.4" dx="5.08" dy="2.54" layer="1" rot="R180"/>
-<smd name="P$16" x="37" y="11.9" dx="5.08" dy="2.54" layer="1" rot="R180"/>
-<smd name="P$17" x="37" y="2.6" dx="5.08" dy="2.54" layer="1" rot="R180"/>
-<smd name="P$18" x="36.9" y="7.3" dx="5.08" dy="2.54" layer="1" rot="R180"/>
+<smd name="1" x="4.2" y="20.5" dx="5.08" dy="2.54" layer="1" rot="R90"/>
+<smd name="2" x="8.9" y="20.5" dx="5.08" dy="2.54" layer="1" rot="R90"/>
+<smd name="3" x="13.3" y="20.5" dx="5.08" dy="2.54" layer="1" rot="R90"/>
+<smd name="4" x="17.8" y="20.5" dx="5.08" dy="2.54" layer="1" rot="R90"/>
+<smd name="5" x="22.2" y="20.5" dx="5.08" dy="2.54" layer="1" rot="R90"/>
+<smd name="6" x="26.7" y="20.5" dx="5.08" dy="2.54" layer="1" rot="R90"/>
+<smd name="7" x="31.1" y="20.5" dx="5.08" dy="2.54" layer="1" rot="R90"/>
+<smd name="18" x="4.2" y="-1.4" dx="5.08" dy="2.54" layer="1" rot="R90"/>
+<smd name="17" x="8.9" y="-1.4" dx="5.08" dy="2.54" layer="1" rot="R90"/>
+<smd name="16" x="13.3" y="-1.4" dx="5.08" dy="2.54" layer="1" rot="R90"/>
+<smd name="15" x="17.8" y="-1.4" dx="5.08" dy="2.54" layer="1" rot="R90"/>
+<smd name="14" x="22.2" y="-1.4" dx="5.08" dy="2.54" layer="1" rot="R90"/>
+<smd name="13" x="26.7" y="-1.4" dx="5.08" dy="2.54" layer="1" rot="R90"/>
+<smd name="12" x="31.1" y="-1.4" dx="5.08" dy="2.54" layer="1" rot="R90"/>
+<smd name="8" x="37" y="16.4" dx="5.08" dy="2.54" layer="1" rot="R180"/>
+<smd name="9" x="37" y="11.9" dx="5.08" dy="2.54" layer="1" rot="R180"/>
+<smd name="11" x="37" y="2.6" dx="5.08" dy="2.54" layer="1" rot="R180"/>
+<smd name="10" x="36.9" y="7.3" dx="5.08" dy="2.54" layer="1" rot="R180"/>
 <text x="4.7" y="8.5" size="1.27" layer="21" rot="R90">SQUELCH</text>
 <text x="9.6" y="14.8" size="1.27" layer="21" rot="R90">NC</text>
 <text x="13.9" y="14.61" size="1.27" layer="21" rot="R90">AF</text>
@@ -194,15 +194,17 @@
 <devices>
 <device name="" package="DORJI">
 <connects>
-<connect gate="G$1" pin="AF_OUT" pad="P$3"/>
-<connect gate="G$1" pin="ANT" pad="P$14"/>
-<connect gate="G$1" pin="GND" pad="P$18"/>
-<connect gate="G$1" pin="H/L" pad="P$7"/>
-<connect gate="G$1" pin="MIC_IN" pad="P$8"/>
-<connect gate="G$1" pin="PD" pad="P$6"/>
-<connect gate="G$1" pin="PTT" pad="P$5"/>
-<connect gate="G$1" pin="SQ" pad="P$1"/>
-<connect gate="G$1" pin="VBAT" pad="P$15"/>
+<connect gate="G$1" pin="AF_OUT" pad="3"/>
+<connect gate="G$1" pin="ANT" pad="12"/>
+<connect gate="G$1" pin="GND" pad="9 10"/>
+<connect gate="G$1" pin="H/L" pad="7"/>
+<connect gate="G$1" pin="MIC_IN" pad="18"/>
+<connect gate="G$1" pin="PD" pad="6"/>
+<connect gate="G$1" pin="PTT" pad="5"/>
+<connect gate="G$1" pin="RXD" pad="16"/>
+<connect gate="G$1" pin="SQ" pad="1"/>
+<connect gate="G$1" pin="TXD" pad="17"/>
+<connect gate="G$1" pin="VBAT" pad="8"/>
 </connects>
 <technologies>
 <technology name=""/>

@@ -4956,13 +4956,19 @@ Source: http://www.cypress.com .. 38-12025_0P_V.pdf</description>
 <text x="-20.32" y="18.542" size="1.778" layer="95">&gt;NAME</text>
 <text x="-20.32" y="-20.32" size="1.778" layer="96">&gt;VALUE</text>
 <pin name="VCC" x="-25.4" y="15.24" length="middle"/>
+<pin name="(PCINT3/T0/ADC3)PA3" x="25.4" y="-7.62" length="middle" rot="R180"/>
+<pin name="(PCINT2/AIN1/ADC2)PA2" x="25.4" y="-10.16" length="middle" rot="R180"/>
+<pin name="(PCINT1/AIN0/ADC1)PA1" x="25.4" y="-12.7" length="middle" rot="R180"/>
+<pin name="(PCINT0/AREF/ADC0)PA0" x="25.4" y="-15.24" length="middle" rot="R180"/>
+<pin name="(PCINT4/T1/SCL/USCK/ADC4)PA4" x="25.4" y="-5.08" length="middle" rot="R180"/>
+<pin name="(PCINT5/OC1B/MISO/DO/ADC5)PA5" x="25.4" y="-2.54" length="middle" rot="R180"/>
+<pin name="(PCINT6/OC1A/SDA/MOSI/ADC6)PA6" x="25.4" y="0" length="middle" rot="R180"/>
+<pin name="(PCINT7/ICP/OC0B/ADC7)PA7" x="25.4" y="2.54" length="middle" rot="R180"/>
+<pin name="(PCINT8/XTAL1/CLKI)PB0" x="25.4" y="7.62" length="middle" rot="R180"/>
+<pin name="(PCINT9/XTAL2)PB1" x="25.4" y="10.16" length="middle" rot="R180"/>
+<pin name="(PCINT10/INT0/OC0A/CKOUT)PB2" x="25.4" y="12.7" length="middle" rot="R180"/>
+<pin name="(PCINT5/RESET/ADC0)PB5" x="25.4" y="15.24" length="middle" rot="R180"/>
 <pin name="GND" x="-25.4" y="-15.24" length="middle"/>
-<pin name="PB5(PCINT5/RESET/ADC0)" x="25.4" y="-12.7" length="middle" rot="R180"/>
-<pin name="PB3(PCINT3/XTAL1/ADC3)" x="25.4" y="-2.54" length="middle" rot="R180"/>
-<pin name="PB4(PCINT4/XTAL2/ADC2)" x="25.4" y="-7.62" length="middle" rot="R180"/>
-<pin name="PB0(PCINT0/MOSI/AIN0)" x="25.4" y="12.7" length="middle" rot="R180"/>
-<pin name="PB1(PCINT1/MISO/AIN1)" x="25.4" y="7.62" length="middle" rot="R180"/>
-<pin name="PB2(PCINT2/SCK/SCL/ADC1)" x="25.4" y="2.54" length="middle" rot="R180"/>
 </symbol>
 <symbol name="LT3990">
 <description>http://www.digikey.com/product-detail/en/LT3990EDD%23PBF/LT3990EDD%23PBF-ND/2297579</description>
@@ -7714,35 +7720,10 @@ Source: http://www.semicon.toshiba.co.jp/td/en/Opto/Photocoupler/en_20050928_TLP
 <deviceset name="ATTINY85">
 <description>Atmel 14-pin 2/4/8kB flash uC</description>
 <gates>
-<gate name="G$1" symbol="ATTINY85" x="0" y="0"/>
+<gate name="G$1" symbol="ATTINY84" x="0" y="0"/>
 </gates>
 <devices>
-<device name="PACKAGE" package="DIL08">
-<connects>
-<connect gate="G$1" pin="GND" pad="4"/>
-<connect gate="G$1" pin="PB0(PCINT0/MOSI/AIN0)" pad="5"/>
-<connect gate="G$1" pin="PB1(PCINT1/MISO/AIN1)" pad="6"/>
-<connect gate="G$1" pin="PB2(PCINT2/SCK/SCL/ADC1)" pad="7"/>
-<connect gate="G$1" pin="PB3(PCINT3/XTAL1/ADC3)" pad="2"/>
-<connect gate="G$1" pin="PB4(PCINT4/XTAL2/ADC2)" pad="3"/>
-<connect gate="G$1" pin="PB5(PCINT5/RESET/ADC0)" pad="1"/>
-<connect gate="G$1" pin="VCC" pad="8"/>
-</connects>
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-<device name="SOCKET" package="SOCKET-08">
-<connects>
-<connect gate="G$1" pin="GND" pad="4"/>
-<connect gate="G$1" pin="PB0(PCINT0/MOSI/AIN0)" pad="5"/>
-<connect gate="G$1" pin="PB1(PCINT1/MISO/AIN1)" pad="6"/>
-<connect gate="G$1" pin="PB2(PCINT2/SCK/SCL/ADC1)" pad="7"/>
-<connect gate="G$1" pin="PB3(PCINT3/XTAL1/ADC3)" pad="2"/>
-<connect gate="G$1" pin="PB4(PCINT4/XTAL2/ADC2)" pad="3"/>
-<connect gate="G$1" pin="PB5(PCINT5/RESET/ADC0)" pad="1"/>
-<connect gate="G$1" pin="VCC" pad="8"/>
-</connects>
+<device name="">
 <technologies>
 <technology name=""/>
 </technologies>
@@ -7780,22 +7761,6 @@ Source: http://www.semicon.toshiba.co.jp/td/en/Opto/Photocoupler/en_20050928_TLP
 <connect gate="G$1" pin="6" pad="6"/>
 <connect gate="G$1" pin="7" pad="7"/>
 <connect gate="G$1" pin="8" pad="8"/>
-</connects>
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-</devices>
-</deviceset>
-<deviceset name="1N4148W">
-<gates>
-<gate name="G$1" symbol="D" x="0" y="0"/>
-</gates>
-<devices>
-<device name="" package="SOD123">
-<connects>
-<connect gate="G$1" pin="A" pad="A"/>
-<connect gate="G$1" pin="C" pad="C"/>
 </connects>
 <technologies>
 <technology name=""/>
