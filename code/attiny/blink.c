@@ -1,32 +1,31 @@
 // blink.c
 #include <avr/io.h>
 #include <util/delay.h>
-#include <Arduino.h>
 
-// prototype
-void wait_sec(int seconds);
+#define F_CPU 8000000
 
 int main (void)
 {
-  // direction register
-  DDRB |= 0x03; // pin 0 and pin1 as output
-  pinMode(0,OUTPUT);
-  while(1)
-    {
-      PORTB |= 0x02; // LED ON
-      wait_sec(1); // sleep
-      PORTB &= 0x01; // LED OFF
-      wait_sec(1); // sleep
+    // see http://matt16060936.blogspot.com/2012/04/attiny-pwm.html
+
+    // direction register - set PB0 output
+    DDRB = 1<<DDB0;
+
+    // clear 0C0A and set to BOTTOM on compare-match
+    TCCR0A = 1<<COM0A1 | 0<<COM0A0;
+
+    // enable fast pwm
+    TCCR0A |= 0<<WGM01 | 0<<WGM00;
+    TCCR0B = 0<<WGM02;
+
+    // set counter 0 prescaler to 1
+    TCCR0B |= 1<<CS00;
+
+    int i = 0;
+    for (;;) {
+      if (++i>255) i=0;
+      OCR0A = i;
+      _delay_ms(10);
     }
-  return 0;
-
-}
-
-// sleeps the specified amount of seconds
-void wait_sec(int seconds)
-{
-  int i;
-  for(i=0; i<seconds; i++)
-    _delay_ms(1000);
-
+    return 0;
 }

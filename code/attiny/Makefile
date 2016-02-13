@@ -3,13 +3,10 @@ CLOCK      = 8000000
 PROGRAMMER = usbasp
 PORT	   = /dev/arduino
 BAUD       = 19200
-FILENAME   = mod
+FILE   = mod
 COMPILE    = avr-gcc -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE)
 
-all: usb clean build upload
-
-usb:
-	ls /dev/cu.*
+all: build upload
 
 8mhz-internal:
 	avrdude -v -p $(DEVICE) -c $(PROGRAMMER) -P $(PORT) -U lfuse:w:0xe2:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
@@ -18,13 +15,13 @@ usb:
 	avrdude -v -p $(DEVICE) -c $(PROGRAMMER) -P $(PORT) -U lfuse:w:0x62:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
 
 build:
-	$(COMPILE) -c $(FILENAME).c -o $(FILENAME).o
-	$(COMPILE) -o $(FILENAME).elf $(FILENAME).o
-	avr-objcopy -j .text -j .data -O ihex $(FILENAME).elf $(FILENAME).hex
-	avr-size --format=avr --mcu=$(DEVICE) $(FILENAME).elf
+	$(COMPILE) -c $(FILE).c -o $(FILE).o -I$(ARDUINO_CORE) -I$(ARDUINO_PINS)
+	$(COMPILE) -o $(FILE).elf $(FILE).o
+	avr-objcopy -j .text -j .data -O ihex $(FILE).elf $(FILE).hex
+	avr-size --format=avr --mcu=$(DEVICE) $(FILE).elf
 
 upload:
-	avrdude -v -p $(DEVICE) -c $(PROGRAMMER) -P $(PORT) -b $(BAUD) -U flash:w:$(FILENAME).hex:i 
+	avrdude -v -p $(DEVICE) -c $(PROGRAMMER) -P $(PORT) -b $(BAUD) -U flash:w:$(FILE).hex:i 
 
 clean:
 	rm main.o
