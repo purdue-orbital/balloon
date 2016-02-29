@@ -1,15 +1,17 @@
-#include "BasicSerial3.h"
+/* #include "BasicSerial3.h" */
 #include <avr/io.h>
+#include <avr/interrupt.h>
+#include "softuart.h"
+#include <util/delay.h>
 
 
-void serOut(const char* str)
-{
-  while (*str) TxByte (*str++);
-}
 
 int main(){
-  uint8_t c;
-  while (1){
-    serOut("Serial echo test\n\r");
+  softuart_init();
+
+  sei();
+  while(1){
+    _delay_ms(1000);
+    softuart_putchar('a');
   }
 }

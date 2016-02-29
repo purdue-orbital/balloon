@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 volatile uint8_t pos = 0;
-volatile uint8_t buffer[9] = {133,39,39,39,39,23,23,23,23};
+volatile uint8_t buffer[9] = {119,39,39,39,39,19,19,19,19};
 
 void main()
 {

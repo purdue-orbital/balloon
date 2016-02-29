@@ -4,20 +4,24 @@
  * @version: $Id$
  */
 
-#define BAUD_RATE 115200
+/* #define BAUD_RATE 115200  /\* lowest baud supported by timer* */
+#define BAUD_RATE 20672  /* lowest baud supported by timer*/
 
-#ifdef F_CPU
+/* #ifdef F_CPU */
   /* account for integer truncation by adding 3/2 = 1.5 */
-  #define TXDELAY (((F_CPU/BAUD_RATE)-7 +1.5)/3)
-  #define RXDELAY (((F_CPU/BAUD_RATE)-5 +1.5)/3)
-  #define RXROUNDED (((F_CPU/BAUD_RATE)-5 +2)/3)
-#else
-  #error CPU frequency F_CPU undefined
-#endif
+  /* #define TXDELAY (((F_CPU/BAUD_RATE)-7 +1.5)/3) */
+  /* #define RXDELAY (((F_CPU/BAUD_RATE)-5 +1.5)/3) */
+  #define TXDELAY 126
+  #define RXDELAY 128
 
-#if RXROUNDED > 127
-  #error low baud rates unsupported - use higher BAUD_RATE
-#endif
+  /* #define RXROUNDED (((F_CPU/BAUD_RATE)-5 +2)/3) */
+/* #else */
+/*   #error CPU frequency F_CPU undefined */
+/* #endif */
+
+/* #if RXROUNDED > 127 */
+/*   #error low baud rates unsupported - use higher BAUD_RATE */
+/* #endif */
 
 void TxTimedByte(char, char);
 char RxTimedByte(char, char); /* 1.5 bit delay, 1 bit delay */

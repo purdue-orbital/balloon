@@ -13,7 +13,7 @@
 #define MODEM_BUFFER_SIZE	4
 
 /* Modem defines */
-#define MODEM_SYNC_LEN		42
+#define MODEM_SYNC_LEN		133
 #define MODEM_TIMER		TCNT1
 #define MODEM_PIN 		PCINT3
 #define MODEM_DDR		DDRB
