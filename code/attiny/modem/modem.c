@@ -1,3 +1,8 @@
+/* Evan Widloski - 2016-02-28
+   Pulse Modem for ATTiny85
+
+   Adapted to TX/RX from http://labs.rakettitiede.com/12kbps-simple-audio-data-transfer-for-avr/
+*/
 #include "modem.h"
 
 //Ring buffer global variables
