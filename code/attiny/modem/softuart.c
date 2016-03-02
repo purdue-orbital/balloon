@@ -197,12 +197,22 @@ ISR(SOFTUART_T_COMP_LABEL)
 	}
 }
 
-static void avr_io_init(void)
-{
-	// TX-Pin as output
-	SOFTUART_TXDDR |=  ( 1 << SOFTUART_TXBIT );
-	// RX-Pin as input
-	SOFTUART_RXDDR &= ~( 1 << SOFTUART_RXBIT );
+/* static void avr_io_init(void) */
+/* { */
+/* 	// RX-Pin as input */
+/* 	SOFTUART_RXDDR &= ~( 1 << SOFTUART_RXBIT ); */
+/* 	// TX-Pin as output */
+/* 	SOFTUART_TXDDR |=  ( 1 << SOFTUART_TXBIT ); */
+/* } */
+
+void softuart_tx(void){
+    	// TX-Pin as output
+    	SOFTUART_TXDDR |=  ( 1 << SOFTUART_TXBIT );
+}
+
+void softuart_rx(void){
+  // RX-Pin as input
+  SOFTUART_RXDDR &= ~( 1 << SOFTUART_RXBIT );
 }
 
 static void avr_timer_init(void)
@@ -226,12 +236,13 @@ static void avr_timer_init(void)
 
 void softuart_init( void )
 {
+  sei();
 	flag_tx_ready = SU_FALSE;
 	flag_rx_ready = SU_FALSE;
 	flag_rx_off   = SU_FALSE;
 	
 	set_tx_pin_high(); /* mt: set to high to avoid garbage on init */
-	avr_io_init();
+	/* avr_io_init(); */
 
 	// timer_set( BAUD_RATE );
 	// set_timer_interrupt( timer_isr );

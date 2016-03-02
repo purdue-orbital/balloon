@@ -4,11 +4,11 @@
 #define F_CPU 3686400UL
 #endif
 
-#define SOFTUART_BAUD_RATE      19200
+#define SOFTUART_BAUD_RATE      9600
 
 #define SOFTUART_RXPIN   PINB
 #define SOFTUART_RXDDR   DDRB
-#define SOFTUART_RXBIT   PB0
+#define SOFTUART_RXBIT   PB2
 
 #define SOFTUART_TXPORT  PORTB
 #define SOFTUART_TXDDR   DDRB
@@ -52,6 +52,10 @@
 
 // Init the Software Uart
 void softuart_init(void);
+
+// Set softuart to transmit/receive
+void softuart_tx(void);
+void softuart_rx(void);
 
 // Clears the contents of the input buffer.
 void softuart_flush_input_buffer( void );

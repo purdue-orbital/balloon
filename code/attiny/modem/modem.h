@@ -20,7 +20,8 @@
 #define MODEM_RX_SYNC_LEN 180
 
 #define MODEM_TIMER		TCNT1
-#define MODEM_PIN 		PCINT0
+#define MODEM_RX_PIN 		PB0
+#define MODEM_TX_PIN 		PB1
 #define MODEM_DDR		DDRB
 #define MODEM_PORT		PORTB
 

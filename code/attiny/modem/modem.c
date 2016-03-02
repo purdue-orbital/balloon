@@ -68,11 +68,11 @@ ISR(PCINT0_vect) {
 void demod_init()  {
 
 	// Modem pin as input
-	MODEM_DDR &= ~(1 << MODEM_PIN);
+	MODEM_DDR &= ~(1 << MODEM_RX_PIN);
 
-	// Enable Pin Change Interrupts and PCINT for MODEM_PIN
+	// Enable Pin Change Interrupts and PCINT for MODEM_RX_PIN
 	GIMSK |= (1 << PCIE);
-	PCMSK |= (1 << MODEM_PIN);
+	PCMSK |= (1 << MODEM_RX_PIN);
 
 	// Timer: TCCR1: CS10, CS11 and CS12 bits: 8MHz clock with Prescaler 64 = 125kHz timer clock
 	TCCR1 = (0 << CS10) | (0 << CS11) | (1 << CS12);
@@ -92,7 +92,7 @@ void modem_put(uint8_t c) {
 
 //this function is called for each bit at the tail byte in the modem buffer
 ISR(TIMER1_COMPA_vect){
-  MODEM_PORT ^= 1<<MODEM_PIN;
+  MODEM_PORT ^= 1<<MODEM_TX_PIN;
 
   if (sync_bits){
     OCR1A = OCR1C = MODEM_TX_SYNC_LEN;
@@ -129,6 +129,6 @@ void mod_init() {
   //clear TCNT1 at OCR1C,, set prescaler 
   TCCR1 =  1<<CTC1 | 0<<CS13 | 1<<CS12 | 0<<CS11 | 0<<CS10;
 
-  MODEM_DDR = 1<<MODEM_PIN;
+  MODEM_DDR = 1<<MODEM_TX_PIN;
   sei(); //enable interrupts
 }
