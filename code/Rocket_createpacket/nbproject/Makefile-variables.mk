@@ -7,21 +7,21 @@ CND_BASEDIR=`pwd`
 CND_BUILDDIR=build
 CND_DISTDIR=dist
 # Debug configuration
-CND_PLATFORM_Debug=Cygwin_4.x-Windows
-CND_ARTIFACT_DIR_Debug=dist/Debug/Cygwin_4.x-Windows
+CND_PLATFORM_Debug=Cygwin-Windows
+CND_ARTIFACT_DIR_Debug=dist/Debug/Cygwin-Windows
 CND_ARTIFACT_NAME_Debug=rocket_createpacket
-CND_ARTIFACT_PATH_Debug=dist/Debug/Cygwin_4.x-Windows/rocket_createpacket
-CND_PACKAGE_DIR_Debug=dist/Debug/Cygwin_4.x-Windows/package
+CND_ARTIFACT_PATH_Debug=dist/Debug/Cygwin-Windows/rocket_createpacket
+CND_PACKAGE_DIR_Debug=dist/Debug/Cygwin-Windows/package
 CND_PACKAGE_NAME_Debug=rocketcreatepacket.tar
-CND_PACKAGE_PATH_Debug=dist/Debug/Cygwin_4.x-Windows/package/rocketcreatepacket.tar
+CND_PACKAGE_PATH_Debug=dist/Debug/Cygwin-Windows/package/rocketcreatepacket.tar
 # Release configuration
-CND_PLATFORM_Release=Cygwin_4.x-Windows
-CND_ARTIFACT_DIR_Release=dist/Release/Cygwin_4.x-Windows
+CND_PLATFORM_Release=Cygwin-Windows
+CND_ARTIFACT_DIR_Release=dist/Release/Cygwin-Windows
 CND_ARTIFACT_NAME_Release=rocket_createpacket
-CND_ARTIFACT_PATH_Release=dist/Release/Cygwin_4.x-Windows/rocket_createpacket
-CND_PACKAGE_DIR_Release=dist/Release/Cygwin_4.x-Windows/package
+CND_ARTIFACT_PATH_Release=dist/Release/Cygwin-Windows/rocket_createpacket
+CND_PACKAGE_DIR_Release=dist/Release/Cygwin-Windows/package
 CND_PACKAGE_NAME_Release=rocketcreatepacket.tar
-CND_PACKAGE_PATH_Release=dist/Release/Cygwin_4.x-Windows/package/rocketcreatepacket.tar
+CND_PACKAGE_PATH_Release=dist/Release/Cygwin-Windows/package/rocketcreatepacket.tar
 #
 # include compiler specific variables
 #

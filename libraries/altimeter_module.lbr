@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE eagle SYSTEM "eagle.dtd">
+<eagle version="7.4.0">
+<drawing>
+<settings>
+<setting alwaysvectorfont="no"/>
+<setting verticaltext="up"/>
+</settings>
+<grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
+<layers>
+<layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
+<layer number="16" name="Bottom" color="1" fill="1" visible="yes" active="yes"/>
+<layer number="17" name="Pads" color="2" fill="1" visible="yes" active="yes"/>
+<layer number="18" name="Vias" color="2" fill="1" visible="yes" active="yes"/>
+<layer number="19" name="Unrouted" color="6" fill="1" visible="yes" active="yes"/>
+<layer number="20" name="Dimension" color="15" fill="1" visible="yes" active="yes"/>
+<layer number="21" name="tPlace" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="22" name="bPlace" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="23" name="tOrigins" color="15" fill="1" visible="yes" active="yes"/>
+<layer number="24" name="bOrigins" color="15" fill="1" visible="yes" active="yes"/>
+<layer number="25" name="tNames" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="26" name="bNames" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="27" name="tValues" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="28" name="bValues" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="29" name="tStop" color="7" fill="3" visible="no" active="yes"/>
+<layer number="30" name="bStop" color="7" fill="6" visible="no" active="yes"/>
+<layer number="31" name="tCream" color="7" fill="4" visible="no" active="yes"/>
+<layer number="32" name="bCream" color="7" fill="5" visible="no" active="yes"/>
+<layer number="33" name="tFinish" color="6" fill="3" visible="no" active="yes"/>
+<layer number="34" name="bFinish" color="6" fill="6" visible="no" active="yes"/>
+<layer number="35" name="tGlue" color="7" fill="4" visible="no" active="yes"/>
+<layer number="36" name="bGlue" color="7" fill="5" visible="no" active="yes"/>
+<layer number="37" name="tTest" color="7" fill="1" visible="no" active="yes"/>
+<layer number="38" name="bTest" color="7" fill="1" visible="no" active="yes"/>
+<layer number="39" name="tKeepout" color="4" fill="11" visible="yes" active="yes"/>
+<layer number="40" name="bKeepout" color="1" fill="11" visible="yes" active="yes"/>
+<layer number="41" name="tRestrict" color="4" fill="10" visible="yes" active="yes"/>
+<layer number="42" name="bRestrict" color="1" fill="10" visible="yes" active="yes"/>
+<layer number="43" name="vRestrict" color="2" fill="10" visible="yes" active="yes"/>
+<layer number="44" name="Drills" color="7" fill="1" visible="no" active="yes"/>
+<layer number="45" name="Holes" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="46" name="Milling" color="3" fill="1" visible="no" active="yes"/>
+<layer number="47" name="Measures" color="7" fill="1" visible="no" active="yes"/>
+<layer number="48" name="Document" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="49" name="Reference" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="51" name="tDocu" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="52" name="bDocu" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="90" name="Modules" color="5" fill="1" visible="yes" active="yes"/>
+<layer number="91" name="Nets" color="2" fill="1" visible="yes" active="yes"/>
+<layer number="92" name="Busses" color="1" fill="1" visible="yes" active="yes"/>
+<layer number="93" name="Pins" color="2" fill="1" visible="yes" active="yes"/>
+<layer number="94" name="Symbols" color="4" fill="1" visible="yes" active="yes"/>
+<layer number="95" name="Names" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="96" name="Values" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="97" name="Info" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="98" name="Guide" color="6" fill="1" visible="yes" active="yes"/>
+</layers>
+<library>
+<packages>
+<package name="MS-5607">
+<wire x1="-10.795" y1="10.16" x2="10.795" y2="10.16" width="0.127" layer="21"/>
+<wire x1="10.795" y1="10.16" x2="10.795" y2="-10.16" width="0.127" layer="21"/>
+<wire x1="10.795" y1="-10.16" x2="-10.795" y2="-10.16" width="0.127" layer="21"/>
+<wire x1="-10.795" y1="10.16" x2="-10.795" y2="-10.16" width="0.127" layer="21"/>
+<hole x="0" y="7.747" drill="2.54"/>
+<text x="-8.89" y="1.27" size="1.27" layer="21">MS-5607</text>
+<wire x1="-0.635" y1="-6.35" x2="0.635" y2="-6.35" width="0.1524" layer="21"/>
+<wire x1="0.635" y1="-6.35" x2="1.27" y2="-6.985" width="0.1524" layer="21"/>
+<wire x1="1.27" y1="-8.255" x2="0.635" y2="-8.89" width="0.1524" layer="21"/>
+<wire x1="-0.635" y1="-6.35" x2="-1.27" y2="-6.985" width="0.1524" layer="21"/>
+<wire x1="-1.27" y1="-8.255" x2="-0.635" y2="-8.89" width="0.1524" layer="21"/>
+<wire x1="0.635" y1="-8.89" x2="-0.635" y2="-8.89" width="0.1524" layer="21"/>
+<pad name="SCL" x="0" y="-7.62" drill="1.016" shape="octagon"/>
+<text x="0.7112" y="-5.7912" size="1.27" layer="25" ratio="10" rot="R90">SCL</text>
+<rectangle x1="-0.254" y1="-7.874" x2="0.254" y2="-7.366" layer="51"/>
+<wire x1="-3.175" y1="-6.35" x2="-1.905" y2="-6.35" width="0.1524" layer="21"/>
+<wire x1="-1.905" y1="-6.35" x2="-1.27" y2="-6.985" width="0.1524" layer="21"/>
+<wire x1="-1.27" y1="-6.985" x2="-1.27" y2="-8.255" width="0.1524" layer="21"/>
+<wire x1="-1.27" y1="-8.255" x2="-1.905" y2="-8.89" width="0.1524" layer="21"/>
+<wire x1="-3.175" y1="-6.35" x2="-3.81" y2="-6.985" width="0.1524" layer="21"/>
+<wire x1="-3.81" y1="-8.255" x2="-3.175" y2="-8.89" width="0.1524" layer="21"/>
+<wire x1="-1.905" y1="-8.89" x2="-3.175" y2="-8.89" width="0.1524" layer="21"/>
+<pad name="PS" x="-2.54" y="-7.62" drill="1.016" shape="octagon"/>
+<text x="-1.8288" y="-5.7912" size="1.27" layer="25" ratio="10" rot="R90">PS</text>
+<rectangle x1="-2.794" y1="-7.874" x2="-2.286" y2="-7.366" layer="51"/>
+<wire x1="-5.715" y1="-6.35" x2="-4.445" y2="-6.35" width="0.1524" layer="21"/>
+<wire x1="-4.445" y1="-6.35" x2="-3.81" y2="-6.985" width="0.1524" layer="21"/>
+<wire x1="-3.81" y1="-6.985" x2="-3.81" y2="-8.255" width="0.1524" layer="21"/>
+<wire x1="-3.81" y1="-8.255" x2="-4.445" y2="-8.89" width="0.1524" layer="21"/>
+<wire x1="-5.715" y1="-6.35" x2="-6.35" y2="-6.985" width="0.1524" layer="21"/>
+<wire x1="-6.35" y1="-8.255" x2="-5.715" y2="-8.89" width="0.1524" layer="21"/>
+<wire x1="-4.445" y1="-8.89" x2="-5.715" y2="-8.89" width="0.1524" layer="21"/>
+<pad name="VIN" x="-5.08" y="-7.62" drill="1.016" shape="octagon"/>
+<text x="-4.3688" y="-5.7912" size="1.27" layer="25" ratio="10" rot="R90">VIN</text>
+<rectangle x1="-5.334" y1="-7.874" x2="-4.826" y2="-7.366" layer="51"/>
+<wire x1="-8.255" y1="-6.35" x2="-6.985" y2="-6.35" width="0.1524" layer="21"/>
+<wire x1="-6.985" y1="-6.35" x2="-6.35" y2="-6.985" width="0.1524" layer="21"/>
+<wire x1="-6.35" y1="-6.985" x2="-6.35" y2="-8.255" width="0.1524" layer="21"/>
+<wire x1="-6.35" y1="-8.255" x2="-6.985" y2="-8.89" width="0.1524" layer="21"/>
+<wire x1="-8.89" y1="-6.985" x2="-8.89" y2="-8.255" width="0.1524" layer="21"/>
+<wire x1="-8.255" y1="-6.35" x2="-8.89" y2="-6.985" width="0.1524" layer="21"/>
+<wire x1="-8.89" y1="-8.255" x2="-8.255" y2="-8.89" width="0.1524" layer="21"/>
+<wire x1="-6.985" y1="-8.89" x2="-8.255" y2="-8.89" width="0.1524" layer="21"/>
+<pad name="GND" x="-7.62" y="-7.62" drill="1.016" shape="octagon"/>
+<text x="-7.0612" y="-5.7912" size="1.27" layer="25" ratio="10" rot="R90">GND</text>
+<rectangle x1="-7.874" y1="-7.874" x2="-7.366" y2="-7.366" layer="51"/>
+<wire x1="1.905" y1="-6.35" x2="3.175" y2="-6.35" width="0.1524" layer="21"/>
+<wire x1="3.175" y1="-6.35" x2="3.81" y2="-6.985" width="0.1524" layer="21"/>
+<wire x1="3.81" y1="-8.255" x2="3.175" y2="-8.89" width="0.1524" layer="21"/>
+<wire x1="1.27" y1="-6.985" x2="1.27" y2="-8.255" width="0.1524" layer="21"/>
+<wire x1="1.905" y1="-6.35" x2="1.27" y2="-6.985" width="0.1524" layer="21"/>
+<wire x1="1.27" y1="-8.255" x2="1.905" y2="-8.89" width="0.1524" layer="21"/>
+<wire x1="3.175" y1="-8.89" x2="1.905" y2="-8.89" width="0.1524" layer="21"/>
+<pad name="SDI/SDA" x="2.54" y="-7.62" drill="1.016" shape="octagon"/>
+<text x="3.2512" y="-5.7912" size="1.27" layer="25" ratio="10" rot="R90">SDI/SDA</text>
+<rectangle x1="2.286" y1="-7.874" x2="2.794" y2="-7.366" layer="51"/>
+<wire x1="4.445" y1="-6.35" x2="5.715" y2="-6.35" width="0.1524" layer="21"/>
+<wire x1="5.715" y1="-6.35" x2="6.35" y2="-6.985" width="0.1524" layer="21"/>
+<wire x1="6.35" y1="-8.255" x2="5.715" y2="-8.89" width="0.1524" layer="21"/>
+<wire x1="3.81" y1="-6.985" x2="3.81" y2="-8.255" width="0.1524" layer="21"/>
+<wire x1="4.445" y1="-6.35" x2="3.81" y2="-6.985" width="0.1524" layer="21"/>
+<wire x1="3.81" y1="-8.255" x2="4.445" y2="-8.89" width="0.1524" layer="21"/>
+<wire x1="5.715" y1="-8.89" x2="4.445" y2="-8.89" width="0.1524" layer="21"/>
+<pad name="SDO" x="5.08" y="-7.62" drill="1.016" shape="octagon"/>
+<text x="5.7912" y="-5.7912" size="1.27" layer="25" ratio="10" rot="R90">SDO</text>
+<rectangle x1="4.826" y1="-7.874" x2="5.334" y2="-7.366" layer="51"/>
+<wire x1="6.985" y1="-6.35" x2="8.255" y2="-6.35" width="0.1524" layer="21"/>
+<wire x1="8.255" y1="-6.35" x2="8.89" y2="-6.985" width="0.1524" layer="21"/>
+<wire x1="8.89" y1="-6.985" x2="8.89" y2="-8.255" width="0.1524" layer="21"/>
+<wire x1="8.89" y1="-8.255" x2="8.255" y2="-8.89" width="0.1524" layer="21"/>
+<wire x1="6.35" y1="-6.985" x2="6.35" y2="-8.255" width="0.1524" layer="21"/>
+<wire x1="6.985" y1="-6.35" x2="6.35" y2="-6.985" width="0.1524" layer="21"/>
+<wire x1="6.35" y1="-8.255" x2="6.985" y2="-8.89" width="0.1524" layer="21"/>
+<wire x1="8.255" y1="-8.89" x2="6.985" y2="-8.89" width="0.1524" layer="21"/>
+<pad name="CS" x="7.62" y="-7.62" drill="1.016" shape="octagon"/>
+<text x="8.3312" y="-5.7912" size="1.27" layer="25" ratio="10" rot="R90">CS</text>
+<rectangle x1="7.366" y1="-7.874" x2="7.874" y2="-7.366" layer="51"/>
+</package>
+</packages>
+<symbols>
+<symbol name="MS-5607">
+<wire x1="-7.62" y1="7.62" x2="15.24" y2="7.62" width="0.254" layer="94"/>
+<pin name="CS" x="-12.7" y="5.08" length="middle"/>
+<pin name="VIN" x="-12.7" y="0" length="middle"/>
+<pin name="PS" x="-12.7" y="-5.08" length="middle"/>
+<pin name="GND" x="-12.7" y="-10.16" length="middle"/>
+<pin name="SDI/SDA" x="20.32" y="5.08" length="middle" rot="R180"/>
+<pin name="SDO" x="20.32" y="0" length="middle" rot="R180"/>
+<pin name="SCL" x="20.32" y="-5.08" length="middle" rot="R180"/>
+<wire x1="-7.62" y1="7.62" x2="-7.62" y2="-12.7" width="0.254" layer="94"/>
+<wire x1="-7.62" y1="-12.7" x2="15.24" y2="-12.7" width="0.254" layer="94"/>
+<wire x1="15.24" y1="-12.7" x2="15.24" y2="7.62" width="0.254" layer="94"/>
+</symbol>
+</symbols>
+<devicesets>
+<deviceset name="MS-5607">
+<gates>
+<gate name="G$1" symbol="MS-5607" x="-12.7" y="10.16"/>
+</gates>
+<devices>
+<device name="" package="MS-5607">
+<connects>
+<connect gate="G$1" pin="CS" pad="CS"/>
+<connect gate="G$1" pin="GND" pad="GND"/>
+<connect gate="G$1" pin="PS" pad="PS"/>
+<connect gate="G$1" pin="SCL" pad="SCL"/>
+<connect gate="G$1" pin="SDI/SDA" pad="SDI/SDA"/>
+<connect gate="G$1" pin="SDO" pad="SDO"/>
+<connect gate="G$1" pin="VIN" pad="VIN"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
+</devicesets>
+</library>
+</drawing>
+</eagle>
