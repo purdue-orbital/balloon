@@ -220,24 +220,22 @@ int main(){
     cof2 >>= 8;
     cof3 >>= 8;
     cof4 >>= 8;
-    /* if (cof1 <= 0){ */
-    /*   cof1 *= -1; */
-    /* } */
-    /* if (cof2 <= 0){ */
-    /*   cof1 *= -1; */
-    /* } */
-    /* if (cof3 <= 0){ */
-    /*   cof1 *= -1; */
-    /* } */
-    /* if (cof4 <= 0){ */
-    /*   cof1 *= -1; */
-    /* } */
 
-    /* printf("%d\n",cof1); */
-    /* printf("%d\n",cof2); */
-    /* printf("%d\n",cof3); */
-    /* printf("%d\n",cof4); */
-    printf("%d\n",cof3*cof3 + cof4*cof4 - cof1*cof1 - cof2*cof2);
+
+    if (cof1 < 0){
+      cof1 *= -1;
+    }
+    if (cof2 < 0){
+      cof2 *= -1;
+    }
+    if (cof3 < 0){
+      cof3 *= -1;
+    }
+    if (cof4 < 0){
+      cof4 *= -1;
+    }
+
+    printf("%d\n",cof3 + cof4 - cof1 - cof2);
       
   }
 

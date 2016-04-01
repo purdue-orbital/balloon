@@ -1,9 +1,9 @@
 DEVICE     = attiny85
 CLOCK      = 8000000
 PROGRAMMER = usbasp
-PORT	     = /dev/arduino
+PORT	  	 = /dev/arduino
 BAUD       = 19200
-FILE       = main
+FILE    	 = main
 COMPILE    = avr-gcc -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE)
 
 all: build upload
@@ -14,15 +14,9 @@ all: build upload
 1mhz-internal:
 	avrdude -v -p $(DEVICE) -c $(PROGRAMMER) -P $(PORT) -U lfuse:w:0x62:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
 
-softuart:
-	$(COMPILE) -c softuart.c -o softuart.o
-
-modem:
-	$(COMPILE) -c modem.c -o modem.o
-
-build: modem softuart
+build:
 	$(COMPILE) -c $(FILE).c -o $(FILE).o
-	$(COMPILE) -o $(FILE).elf $(FILE).o modem.o softuart.o
+	$(COMPILE) -o $(FILE).elf $(FILE).o
 	avr-objcopy -j .text -j .data -O ihex $(FILE).elf $(FILE).hex
 	avr-size --format=avr --mcu=$(DEVICE) $(FILE).elf
 
