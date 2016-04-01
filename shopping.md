@@ -1,6 +1,4 @@
-- TLC274
-- attiny10
-- DRA818V
+- LMV324 http://www.digikey.com/product-detail/en/stmicroelectronics/LMV324LIDT/497-13052-1-ND/3458219
 - Baofeng UV-5R
 
 QFN20 breakout
