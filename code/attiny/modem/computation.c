@@ -1,18 +1,13 @@
+// testing freq detect algorithm
+// Evan Widloski - 2016-04-01
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 
 int main(){
 
-
-   
-  /* int8_t samples[8] = {127,152,158,141,113,96,102,127}; //1200Hz */
-  /* int8_t samples[8] = {127,159,122,96,136,157,113,99}; //2200Hz */
-
-  /* int8_t samples[8] = {0,25,31,14,-14,-31,-25,-0}; //1200Hz */
-  /* int8_t samples[8] = {0,32,-5,-31,9,30,-14,-28}; //2200Hz */
-    // get some vars ready for the computation
-
+  // samples starting at 1200Hz, increment 100Hz.  sample rate 9600Hz
   uint8_t samples[41][8] = {{127,152,158,141,113,96,102,127},
                             {127,153,157,134,105,95,113,143},
                             {127,155,155,127,99,99,127,155},
@@ -56,9 +51,6 @@ int main(){
                             {127,105,159,102,132,145,96,155}};
 
 
-  /* uint8_t samples[41][8] = {{127,152,158,141,113,96,102,127}}; */
-  /* uint8_t samples[41][8] = {{127,159,122,96,136,157,113,99}}; */
-
     // add most recent ADC reading to samples[]
   int16_t cof1 = 0, cof2 = 0, cof3 = 0, cof4 = 0;
   for(int i = 0;i < 41; i++){
@@ -76,11 +68,6 @@ int main(){
     cof1 += data;
     cof2 += data;
     cof4 += data;
-    /* printf("data:%d\n",data); */
-    /* printf("cof1:%d\n",cof1); */
-    /* printf("cof2:%d\n",cof2); */
-    /* printf("cof3:%d\n",cof3); */
-    /* printf("cof4:%d\n",cof4); */
     data <<= 1;
     cof4 += data;
     data <<= 1;
@@ -236,7 +223,6 @@ int main(){
     }
 
     printf("%d\n",cof3 + cof4 - cof1 - cof2);
-      
   }
 
 }
