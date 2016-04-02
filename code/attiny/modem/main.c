@@ -5,13 +5,13 @@
 
    Pinout
    ------
-                   ATTiny85
-                    --u--
-   mod select  PB5 -|o  |-
-   data in     PB3 -|   |- PB2  mod in
-   data out    PB4 -|   |- PB1  mod out
-                   -|   |-
-                    -----
+                      ATTiny85
+                       ------
+   mod select  PB5   --|o   |--
+   data in     PB3   --|    |--   PB2  mod in
+   data out    PB4   --|    |--   PB1  mod out
+                     --|    |--
+                       ------
 */
 
 #include <avr/io.h>
@@ -26,10 +26,12 @@ int8_t samples[8] = {0,0,0,0,0,0,0,0};
 
 int main()
 {
+
+  // Set pullup on data in and mod select
+  PORTB |= 1<<PB5 | 1<<PB3;
+  // --- Demodulation Init ---
   //enable data out
   DDRB = 1<<DDB4;
-
-  // --- Demodulation Init ---
 
   // Set Timer 0 prescaler to 8
   TCCR0B = 1<<CS01;
@@ -46,8 +48,6 @@ int main()
   // Trigger ADC on Timer0 Compare Match A
   ADCSRB = 1<<ADTS1 | 1<<ADTS0;
 
-  //enable global interrupts
-	sei();
   //start ADC
   ADCSRA |= 1<<ADSC;
 
@@ -55,19 +55,27 @@ int main()
 
   //enable mod out
   DDRB |= 1<<DDB1;
+  DDRB |= 1<<DDB0;
 
   // Put Timer 1 in CTC mode, Set Timer 1 Prescaler to 16
   TCCR1 = 1<<CTC1 | 1<<CS12 | 1<<CS10;
 
+  /* // turn on pin change interrupts */
+  /* GIMSK = 1<<PCIE; */
+
+  // interrupt on OCR1A match
+  TIMSK |= 1<<OCIE1A;
+
+  //enable global interrupts
+	sei();
+
+  int16_t out;
+
   uint8_t oldest_sample = 0;
-	while(1)
-	{
+	while(1) {
 
     // check if ADC ready
     if (ADCSRA & 1<<ADIF){
-      // put an impulse on PB4 to show when it gets sampled
-      /* PINB |= 1<<PB4; */
-      /* PINB |= 1<<PB4; */
 
       // reset the Timer 0 Compare Match A flag
       TIFR = 1<<OCF0A;
@@ -246,38 +254,59 @@ int main()
         cof4 *= -1;
       }
 
-      PINB |= 1<<PB1;
-      int16_t result = cof3 + cof4 - cof1 - cof2;
+      out = out + (cof3 + cof4 - cof1 - cof2 - out)>>2;
 
       //2200Hz detected, set output high
-      if (result > 10){
+      if (out > 0){
         PORTB |= 1<<PB4;
       }
 
       // 1200Hz detected, set output low
-      else if (result < -10){
+      else if (out < 0){
         PORTB &= ~(1<<PB4);
       }
     }
-
     // check if were supposed to modulate or demodulate
     if (~PINB & 1<<PB5){
-      PINB |= PB1;
       // enable toggling of OC1A
       TCCR1 |= 1<<COM1A0;
-      // if logic 1 input, modulate 2200Hz
-      if (~PINB & 1<<PB3){
-        // ((8000000/16)/2200)/2 = 113.64
-        OCR1A = OCR1C = 113;
-      }
-      // if logic 0 input, modulate 1200Hz
-      else {
-        // ((8000000/16)/1200)/2 = 208.33
-        OCR1A = OCR1C = 207;
-      }
+      // unmask data-in interrupt pin
+      PCMSK |= 1<<PCINT3;
     }
-	}
-
-  return(0);
+    else {
+        // disable toggling of OC1A
+        TCCR1 &= ~(1<<COM1A0);
+        // mask data-in interrupt pin
+        PCMSK &= ~(1<<PCINT3);
+    }
+  }
 }
 
+/* ISR(PCINT0_vect){ */
+/*   /\* TCNT1 = 0; *\/ */
+/*   /\* PINB = 1<<PB1; *\/ */
+/*   /\* GTCCR |= 1<<FOC1A; *\/ */
+/*   // if logic 1 input, modulate 2200Hz */
+/*   if (PINB & 1<<PB3){ */
+/*     // ((8000000/16)/2200)/2 = 113.64 */
+/*     OCR1A = OCR1C = 113; */
+/*   } */
+/*   // if logic 0 input, modulate 1200Hz */
+/*   else { */
+/*     // ((8000000/16)/1200)/2 = 208.33 */
+/*     OCR1A = OCR1C = 207; */
+/*   } */
+/* } */
+  
+
+ISR(TIMER1_COMPA_vect){
+  if (PINB & 1<<PB3){
+    // ((8000000/16)/2200)/2 = 113.64
+    OCR1A = OCR1C = 113;
+  }
+  // if logic 0 input, modulate 1200Hz
+  else {
+    // ((8000000/16)/1200)/2 = 208.33
+    OCR1A = OCR1C = 207;
+  }
+}
