@@ -232,8 +232,8 @@ shift = 127;
 ## ylabel('frequency')
 ## view(-90,180)
 
+%---------- Plot result against time ---------------
 
-%---------- Synthesize FSK signal -------------------
 samples = 192*2;
 time = linspace(0,samples/sample_rate,samples);
 n = 1:samples;
@@ -241,42 +241,28 @@ fsk_rate = 300;
 mark = round(amplitude*sin(2*pi*2200*time)) + shift;
 space = round(amplitude*sin(2*pi*1200*time)) + shift;
 
-subplot(3,1,1)
-plot(t,signal)
-title('FSK Modulation')
-xlabel('time')
-ylabel('int value')
-axis([t(1) t(end)])
-
 samples_per_bit = sample_rate/fsk_rate;
 signal = (mod(n,2*samples_per_bit) >= samples_per_bit) .* mark ...
          + (mod(n,2*samples_per_bit) < samples_per_bit) .* space;
 
-%---------- Plot result against time ---------------
 result = [];
 for i = 1:samples - 7
     result = [result gen2(signal(:,i:i + 7))];
 endfor
 
-subplot(3,1,2)
-plot(t(1:samples - 7),result)
-title('Demodulated')
-xlabel('time')
-ylabel('int value')
-axis([t(1) t(end)])
-
-%--------- test effects of lowpass (n sample rolling average) ---------------
 for i = 4:length(result)
   result(i) = bitshift(result(i) + result(i-1) + result(i-2) + result(i-3),-2);
 endfor
 
+
 hold on
 
-subplot(3,1,3)
-plot(t(1:samples - 7),result)
-title('Demodulated with LPF')
+subplot(2,1,1)
+plot(t,signal)
 xlabel('time')
-ylabel('int value')
 axis([t(1) t(end)])
 
-
+subplot(2,1,2)
+plot(t(1:samples - 7),result)
+xlabel('time')
+axis([t(1) t(end)])
