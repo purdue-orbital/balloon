@@ -18,6 +18,9 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
+/* #define AVG (out[oldest_sample] + out[oldest_sample + 1] + out[oldest_sample + 2] + out[oldest_sample + 3] + out[oldest_sample + 4] + out[oldest_sample + 5] + out[oldest_sample + 6] + out[oldest_sample + 7])>>3 */
+#define AVG (out[oldest_sample] + out[oldest_sample + 1] + out[oldest_sample + 2] + out[oldest_sample + 3])>>2
+
 
 uint8_t ADC_READY = 0;
 
@@ -53,7 +56,7 @@ int main()
 
   // --- Modulation Init ---
 
-  //enable mod out
+  /* enable mod out */
   DDRB |= 1<<DDB1;
   DDRB |= 1<<DDB0;
 
@@ -69,7 +72,9 @@ int main()
   //enable global interrupts
 	sei();
 
-  int16_t out;
+  /* int16_t out[8] = {0,0,0,0,0,0,0,0}; */
+  /* int16_t out[4] = {0,0,0,0}; */
+  int16_t out = 0;
 
   uint8_t oldest_sample = 0;
 	while(1) {
@@ -84,20 +89,21 @@ int main()
       ADCSRA |= 1<<ADIF;
 
       // get some vars ready for the computation
-      int16_t cof1 = 0, cof2 = 0, cof3 = 0, cof4 = 0;
+      int16_t cof1 = 0, cof2 = 0, cof3 = 0, cof4 = 0, sample_avg = 0;
 
       // add most recent ADC reading to samples[]
       samples[oldest_sample] = (int8_t)ADCH - 127;
       oldest_sample = (oldest_sample + 1) % 8;
+      sample_avg = (samples[0] + samples[1] + samples[2] + samples[3] + samples[4] + samples[5] + samples[6] + samples[7])>>3;
 
-      int16_t data = samples[oldest_sample] << 6;
+      int16_t data = (samples[oldest_sample] - sample_avg) << 6;
 
       cof1 = data;
       cof2 = 0;
       cof3 = data;
       cof4 = 0;
 
-      data = samples[(oldest_sample + 1)%8];
+      data = samples[(oldest_sample + 1)%8] - sample_avg;
       cof1 += data;
       cof2 += data;
       cof4 += data;
@@ -119,7 +125,8 @@ int main()
       cof2 += data;
       cof4 += data;
 
-      data = samples[(oldest_sample + 2)%8];
+      /* data = samples[(oldest_sample + 2)%8]; */
+      data = samples[(oldest_sample + 2)%8] - sample_avg;
       cof4 += data;
       data <<= 1;
       cof3 -= data;
@@ -135,7 +142,8 @@ int main()
       data <<= 1;
       cof2 += data;
 
-      data = samples[(oldest_sample + 3)%8];
+      /* data = samples[(oldest_sample + 3)%8]; */
+      data = samples[(oldest_sample + 3)%8] - sample_avg;
       cof1 -= data;
       cof2 += data;
       cof4 -= data;
@@ -157,7 +165,8 @@ int main()
       cof2 += data;
       cof4 -= data;
 
-      data = samples[(oldest_sample + 4)%8];
+      /* data = samples[(oldest_sample + 4)%8]; */
+      data = samples[(oldest_sample + 4)%8] - sample_avg;
       cof3 += data;
       data <<= 1;
       cof3 += data;
@@ -172,7 +181,8 @@ int main()
       data <<= 1;
       cof1 -= data;
 
-      data = samples[(oldest_sample + 5)%8];
+      /* data = samples[(oldest_sample + 5)%8]; */
+      data = samples[(oldest_sample + 5)%8] - sample_avg;
       cof1 -= data;
       cof2 -= data;
       cof3 += data;
@@ -195,7 +205,8 @@ int main()
       cof3 += data;
       cof4 += data;
 
-      data = samples[(oldest_sample + 6)%8];
+      /* data = samples[(oldest_sample + 6)%8]; */
+      data = samples[(oldest_sample + 6)%8] - sample_avg;
       cof3 -= data;
       cof4 += data;
       data <<= 1;
@@ -212,7 +223,8 @@ int main()
       data <<= 1;
       cof2 -= data;
 
-      data = samples[(oldest_sample + 7)%8];
+      /* data = samples[(oldest_sample + 7)%8]; */
+      data = samples[(oldest_sample + 7)%8] - sample_avg;
       cof1 += data;
       cof2 -= data;
       cof3 -= data;
@@ -254,15 +266,20 @@ int main()
         cof4 *= -1;
       }
 
-      out = out + (cof3 + cof4 - cof1 - cof2 - out)>>2;
+      /* out = (out + cof3 + cof4 - cof1 - cof2)>>2; */
+      /* out[oldest_sample%4] = cof3 + cof4 - cof1 - cof2; */
+      out = cof3 + cof4 - cof1 - cof2;
 
       //2200Hz detected, set output high
-      if (out > 0){
+      /* if (AVG > 4){ */
+      if (out > 4){
         PORTB |= 1<<PB4;
       }
 
       // 1200Hz detected, set output low
-      else if (out < 0){
+      /* else if ((out[oldest_sample%4] + out[(oldest_sample + 1)%4] + out[(oldest_sample + 2)%4] + out[(oldest_sample + 3)%4])>>2 < 4){ */
+      /* else if (AVG < -4){ */
+      else if (out < -4){
         PORTB &= ~(1<<PB4);
       }
     }

@@ -237,7 +237,7 @@ shift = 127;
 samples = 192*2;
 time = linspace(0,samples/sample_rate,samples);
 n = 1:samples;
-fsk_rate = 300;
+fsk_rate = 600;
 mark = round(amplitude*sin(2*pi*2200*time)) + shift;
 space = round(amplitude*sin(2*pi*1200*time)) + shift;
 
@@ -258,11 +258,11 @@ endfor
 hold on
 
 subplot(2,1,1)
-plot(t,signal)
+plot(time,signal)
 xlabel('time')
-axis([t(1) t(end)])
+axis([time(1) time(end)])
 
 subplot(2,1,2)
-plot(t(1:samples - 7),result)
+plot(time(1:samples - 7),result)
 xlabel('time')
-axis([t(1) t(end)])
+axis([time(1) time(end)])

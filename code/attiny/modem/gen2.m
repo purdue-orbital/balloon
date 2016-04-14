@@ -216,6 +216,8 @@ shift = 127;
 
 ## freqs = 500:100:3000;
 ## reses = [];
+## subplot(4,1,1)
+## hold on
 ## for freq = freqs
 
 ##   res = [];
@@ -224,24 +226,26 @@ shift = 127;
 ##     ## x = round(amplitude*sin(2*pi*freq*(t - s)) + 0*randn(1,8) + 40);  %add some noise
 ##     res = [res gen2(x(:,1:8))];
 ##   endfor
+##   plot([freq],res)
 ##   reses = [reses; res];
 
 ## endfor
-## mesh(phases,freqs,double(reses))
+
+## ## mesh(phases,freqs,double(reses))
 ## xlabel('phase')
 ## ylabel('frequency')
-## view(-90,180)
+## ## view(-90,180)
 
 
 %---------- Synthesize FSK signal -------------------
 samples = 192*2;
-time = linspace(0,samples/sample_rate,samples);
+t = linspace(0,samples/sample_rate,samples);
 n = 1:samples;
-fsk_rate = 300;
-mark = round(amplitude*sin(2*pi*2200*time)) + shift;
-space = round(amplitude*sin(2*pi*1200*time)) + shift;
+fsk_rate = 550;
+mark = round(amplitude*sin(2*pi*2200*t)) + shift;
+space = round(amplitude*sin(2*pi*1200*t)) + shift;
 
-subplot(3,1,1)
+subplot(4,1,2)
 plot(t,signal)
 title('FSK Modulation')
 xlabel('time')
@@ -258,7 +262,7 @@ for i = 1:samples - 7
     result = [result gen2(signal(:,i:i + 7))];
 endfor
 
-subplot(3,1,2)
+subplot(4,1,3)
 plot(t(1:samples - 7),result)
 title('Demodulated')
 xlabel('time')
@@ -272,7 +276,7 @@ endfor
 
 hold on
 
-subplot(3,1,3)
+subplot(4,1,4)
 plot(t(1:samples - 7),result)
 title('Demodulated with LPF')
 xlabel('time')
