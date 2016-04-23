@@ -3,3 +3,6 @@
 
 QFN20 breakout
 SI4460
+
+atmega8u2 or atmega32u2
+sdcard holder
