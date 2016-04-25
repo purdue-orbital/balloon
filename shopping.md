@@ -4,5 +4,7 @@
 QFN20 breakout
 SI4460
 
-atmega8u2 or atmega32u2
-sdcard holder
+lm1117 - 3.3V
+attiny84
+sma connector
+CSTCE16M0V533-R0
