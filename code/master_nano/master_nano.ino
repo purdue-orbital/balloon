@@ -1,4 +1,4 @@
-/* #include<avr/wdt.h> */
+//NOTE: After 50 days millis rolls over. Shouldn't be an issue for normal operations
 #define ADDRESS 1
 #define HEADER 0
 #define ARG1 2
@@ -12,6 +12,10 @@
 
 #define RX_EN 3
 
+//#define LED_SETUP DDRB = DDRB | B10000000
+//#define LED_ON PORTB = PORTB | B10000000
+//#define LED_OFF PORTB = PORTB & B01111111
+
 
 uint16_t crc16(uint8_t *data_p, unsigned short length);
 void extractPackets();
@@ -24,27 +28,37 @@ void tx_enable(void);
 using namespace std;
 char actOnBuff[300];
 int nextActBuffIndex = 0;
+int board;
+int tOutDelay;
+boolean synched;
 
-//int eEPromAddy = 0;
+int lastcalled = 0;
+
 void setup() {
-  pinMode(RX_EN,OUTPUT);
-
-  /* wdt_enable(WDTO_500MS); */
-  /* Serial.begin(9600); */
-  Serial.begin(600);
-  /* while(Serial.available()<=0); */
-  /* writeByCommand(Serial.read()); */
-  writeByCommand('e');
-    /*if (file == NULL)
-    {
-        return NULL; //could not open file
-    }*/
-  /* wdt_reset(); */
-  /* extractPackets(); */
+  if(analogRead(3)>512){board = 2; tOutDelay = 1000;} else {board = 1; tOutDelay = 337;}
+  Serial.begin(9600);
+  Serial1.begin(115200);
+  pinMode(13,OUTPUT);
+  extractPackets();  
+  digitalWrite(13,HIGH);
+  synched = 1;
 }
 void loop(){
-  delay(500);
-  writeByCommand('2');
+  if(board == 2)
+  {
+     if(millis()-lastcalled > 100 ){ writeByCommand('6'); lastcalled = millis();}
+       /*
+   * This is where user/automated requests (from this node) to send a packet should be processed. 
+   */
+  }
+  else if(board == 1)
+  {
+      /*
+   * This is where user/automated requests (from this node) to send a packet should be processed. 
+   */
+  }
+  writeByCommand('e');
+  extractPackets();
 }
 
 void extractPackets()
@@ -59,13 +73,16 @@ void extractPackets()
     bool done=0;
     int nextStart = 0;
     char address = 'n';
+    int tLastRead;
 
     while(address!='e')
     {
-      /* wdt_reset(); */
-        if(Serial.available()>0)
+        if(tLastRead - millis() > tOutDelay){ writeByCommand('e'); digitalWrite(13,LOW); synched = 0;} //Timeout.. haven't received a packet in a while
+        
+        if(Serial1.available()>0)
         {
-            c = Serial.read();
+            if(synched == 0){digitalWrite(13,HIGH); synched = 1;}
+            c = Serial1.read();
             if(i == sizeof(data))//If the last byte of a possible packet is reached
             {
                 crc = crc16(data, 4);
@@ -109,10 +126,6 @@ void extractPackets()
                 {
                     i = 0;
                     nextStart = 0;
-                    /*for(int i=0;i<6;i++)
-                    {
-                      writeToStorage(data[i]);
-                    }*/
                     actOnPacket(data[1],data[2],data[3]);
                     done = 0;
                     address = data[1];
@@ -121,20 +134,15 @@ void extractPackets()
             
             if(!done)
             {
-                if(i<sizeof(data))data[i]=c;
+                if(i<sizeof(data))
+                  data[i]=c;
                 i++;
-            }        
+            } 
+            tLastRead = millis();       
         }
     }
     return;
 }
-
-/*void writeToStorage(char c)
-{
-  if(eEPromAddy<200)
-    EEPROM.write(eEPromAddy++, c);
-}
-*/
 
 void writeByCommand(char address)
 {
@@ -148,7 +156,7 @@ void writeByCommand(char address)
             writeData(address,dataOne,dataTwo);
             break;
         case '2':
-            dataOne = 'c';
+            dataOne = (char)board;
             dataTwo = 'd';
             writeData(address,dataOne,dataTwo);
             break;
@@ -176,17 +184,10 @@ void writeByCommand(char address)
             break;
         case 'e':
             dataOne = 'n';
-            dataTwo = 'd';
-
-            tx_enable();
+            dataTwo = 'd';            
             writeData(address,dataOne,dataTwo);
-
-            // don't have the slave set up yet, just send a command and don't wait for response
-            /* rx_enable(); */
-            /* extractPackets(); */
             break;
-    }
-    //writeData('e','n','d');    
+    }  
     return;
 }
 
@@ -203,19 +204,19 @@ void writeData(char address, char dataOne, char dataTwo)
     data[4] = (uint8_t) (crc & 0xFF);
     data[5] = (uint8_t) ((crc >> 8) & 0xFF);
     
-    /* Serial.print("\nYo this is what I'm sending back to master: "); */
+    /* Serial1.print("\nYo this is what I'm sending back to master: "); */
     int i;
     for (i=0;i < (sizeof (data) /sizeof (data[0]));i++) 
     {
-          Serial.print((char)data[i]);
-          /* Serial.print((char)data[i]);    */
+          Serial1.print((char)data[i]);
+          /* Serial1.print((char)data[i]);    */
       //fprintf(yo, "%c",(char)data[i]);
         //printf("%d\n",data[i]);
     }
-    /* Serial.println(""); */
+    /* Serial1.println(""); */
     if(address=='e')
     {
-      Serial.print('@');
+      Serial1.print('@');
     }
 
 }
@@ -227,29 +228,32 @@ void actOnPacket(char address, char dataOne, char dataTwo)
     {
         case '1':
             //printf("Sensor 1 data: %d mph, %d degrees\n",(int)dataOne,(int)dataTwo);
-            /* Serial.print("Sensor 1 data: "); */
-            /* Serial.print((int)dataOne); */
-            /* Serial.print(" mph, "); */
-            /* Serial.print((int)dataTwo); */
-            /* Serial.print(" degrees\n"); */
+            /* Serial1.print("Sensor 1 data: "); */
+            /* Serial1.print((int)dataOne); */
+            /* Serial1.print(" mph, "); */
+            /* Serial1.print((int)dataTwo); */
+            /* Serial1.print(" degrees\n"); */
             break;
         case '2':
-            //printf("Sensor 2 data: %d K\n",(int)dataOne);
-            /* Serial.print("Sensor 2 data: "); */
-            /* Serial.print((int)dataOne); */
-            /* Serial.print(" K\n"); */
+            Serial.print("Identity of remote node: board_");
+            Serial.print((int)dataOne);
+            Serial.print(" I'm board_");
+            Serial.println(board);
+            /* Serial1.print("Sensor 2 data: "); */
+            /* Serial1.print((int)dataOne); */
+            /* Serial1.print(" K\n"); */
             break;
         case '3':
             //printf("Sensor 3 data: %d N\n",(int)dataOne);
-            /* Serial.print("Sensor 3 data: "); */
-            /* Serial.print((int)dataOne); */
-            /* Serial.print("N\n"); */
+            /* Serial1.print("Sensor 3 data: "); */
+            /* Serial1.print((int)dataOne); */
+            /* Serial1.print("N\n"); */
             break;
         case '4':
-            //pri ntf("Sensor 4 data: %d m\n",(int) dataOne);
-            /* Serial.print("Sensor 4 data: "); */
-            /* Serial.print((int)dataOne); */
-            /* Serial.print(" m\n"); */
+            //printf("Sensor 4 data: %d m\n",(int) dataOne);
+            /* Serial1.print("Sensor 4 data: "); */
+            /* Serial1.print((int)dataOne); */
+            /* Serial1.print(" m\n"); */
             break;
         case '5':
         case '6':
@@ -258,8 +262,6 @@ void actOnPacket(char address, char dataOne, char dataTwo)
             addActOnBuff(address-4);
             break;
         case 'e':
-            /* if(Serial.available()>0) */
-            /*   addActOnBuff(Serial.read()); */
             delay(SWITCHING_DELAY);
             flushActOnBuff();
             break;
@@ -268,7 +270,7 @@ void actOnPacket(char address, char dataOne, char dataTwo)
 
 void addActOnBuff(char address)
 {
-  /* Serial.println("\nADDED SOMETHING TO BUFFER"); */
+  /* Serial1.println("\nADDED SOMETHING TO BUFFER"); */
   if(nextActBuffIndex<sizeof(actOnBuff))
     actOnBuff[nextActBuffIndex++] = address;
   return;
@@ -279,10 +281,8 @@ void flushActOnBuff()
   for(int i=0; i<nextActBuffIndex&&i<sizeof(actOnBuff);i++)
   {
     writeByCommand(actOnBuff[i]);
-    /* wdt_reset(); */
   }
   nextActBuffIndex = 0;
-  writeByCommand('e');//send end packet
   return;
 }
 
@@ -312,14 +312,4 @@ uint16_t crc16(uint8_t *data_p, unsigned short length)
       crc = (crc << 8) | (data >> 8 & 0xff);
  
       return (crc);
-}
-
-void tx_enable(){
-  digitalWrite(RX_EN,LOW);
-  delay(SWITCHING_DELAY);
-}
-
-void rx_enable(){
-  digitalWrite(RX_EN,HIGH);
-  delay(SWITCHING_DELAY);
 }
