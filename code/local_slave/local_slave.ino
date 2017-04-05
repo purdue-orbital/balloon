@@ -8,26 +8,17 @@ volatile boolean process_it;
 
 void setup (void)
 {
-  // Serial.begin (115200);   // debugging
-  pinMode(ATTENTION_IN, INPUT);
-  pinMode(ATTENTION_OUT, OUTPUT);
-  
-  digitalWrite(SS, HIGH);  // ensure SS stays high for now
-  digitalWrite(ATTENTION_OUT, HIGH);
-
-  // Put SCK, MOSI, SS pins into output mode
-  // also put SCK, MOSI into LOW state, and SS into HIGH state.
-  // Then put SPI hardware into Master mode and turn SPI on
-  SPI.begin();
-  SPI.setClockDivider(SPI_CLOCK_DIV4);
-  SPI.setBitOrder(MSBFIRST);
-  SPI.setDataMode(SPI_MODE0);
+  Serial.begin (115200);   // debugging
   
   // turn on SPI in slave mode
   SPCR |= bit (SPE);
 
   // have to send on master in, *slave out*
   pinMode(MISO, OUTPUT);
+  pinMode(ATTENTION_IN, INPUT);
+  pinMode(ATTENTION_OUT, OUTPUT);
+
+  digitalWrite(ATTENTION_OUT, HIGH);
   
   // get ready for an interrupt 
   pos = 0;   // buffer empty
@@ -45,19 +36,19 @@ ISR (SPI_STC_vect)
 byte c = SPDR;  // grab byte from SPI Data Register
   
   // add to buffer if room
-  if (pos < (sizeof (buf) - 1))
+  if (pos < (sizeof (buf) - 1) && digitalRead(ATTENTION_IN) == LOW)
     buf [pos++] = c;
     
   // example: newline means time to process buffer
-  if (c == '\n')
-    process_it = true;
+  //if (c == '\n' && digitalRead(ATTENTION_IN) == LOW)
+  //  process_it = true;
       
 }  // end of interrupt routine SPI_STC_vect
 
 // main loop - wait for flag set in interrupt routine
 void loop (void)
 {
-  if (process_it && !ATTENTION_IN)
+  if (pos > 0 && digitalRead(ATTENTION_IN) == HIGH)
     {
     buf [pos] = 0;  
     Serial.println (buf);
