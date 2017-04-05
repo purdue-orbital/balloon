@@ -15,6 +15,14 @@
 
 #define IGNITION_IN 2
 #define IGNITION_OUT 8
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <sys/time.h>
+typedef unsigned char  uint8_t;
+int display(int function, uint8_t data1, uint8_t data2);
+
 
 void setup() {
 pinMode(IGNITION_IN,INPUT);
@@ -198,4 +206,75 @@ void parse()
   inputBuff = inputBuff.substring(indx+1);
   oldIndx = inputBuff.indexOf('$');
   tempArg2 = (uint8_t)inputBuff.substring(0,oldIndx);
+}
+int display(int function, uint8_t data1, uint8_t data2) {
+	
+	unsigned int value = 0;
+	
+	value = data1 << 8; 
+	value += data2;
+	//if ( value == 0)
+	//	{ function = 6;}
+
+	switch ( function ) {
+  case 1:            // 
+    printf("int function1 example temp\n");
+    printf("%d C\n", value);
+    break;
+  case 2:            // 
+    printf("int function2 example meter\n");
+    printf("%d m\n", value);
+    break;
+  case 3:            // 
+    printf("int function3\n");
+    break;
+  case 4:            // 
+    printf("int function4\n");
+    break;
+  case 5:            // 
+    printf("f5\n");
+    break;
+  case 6:            // 
+    printf("value is NULL\n");
+    break;
+  default:            // catchall error case if wrong function number is received
+    printf("Error\n");
+    return 0;
+    break;
+  }
+	
+	
+	
+
+
+
+
+
+
+FILE *f1 = fopen("file.txt", "a");
+if (f1 == NULL)
+{
+    printf("Error opening file!\n");
+}
+
+int i = value;
+ int j = function;
+fprintf(f1, "\n%d  ", j);
+fprintf(f1, "%d  ", i);
+//time
+    struct timeval usec_time;
+    time_t now = time(0);
+    gettimeofday(&usec_time,NULL);
+    // format time
+    struct tm *current = localtime(&now);
+    //printf("%d:%d:%d\n",current->tm_hour, current->tm_min, current->tm_sec);
+    fprintf(f1,"%d:%d:%d\n",current->tm_hour, current->tm_min, current->tm_sec);
+
+//char *ctime(const time_t *timer)
+//fprintf(f1, ); //get time
+
+fclose(f1);
+
+	
+	return 1;
 }
