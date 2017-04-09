@@ -43,31 +43,63 @@ void ignite() {
 }
 
 /*--------------------------------BUFFER----------------------------------*/
-uint8_t buff[300];
-int nextBuffIndex = 0;
+uint8_t txBuff[300];
+int nextTxBuffIndex = 0;
 
-void addBuff(char address,char arg1, char arg2)
+void addTxBuff(char address,char arg1, char arg2)
 {
-  if((nextBuffIndex+2)<sizeof(buff))
+  if((nextTxBuffIndex+2)<sizeof(txBuff))
   {
-    buff[nextBuffIndex++] = address;
-    buff[nextBuffIndex++] = arg1;
-    buff[nextBuffIndex++] = arg2;
+    txBuff[nextTxBuffIndex++] = address;
+    txBuff[nextTxBuffIndex++] = arg1;
+    txBuff[nextTxBuffIndex++] = arg2;
   }
   return;
 }
 
-void flushBuff()
+void addRxBuff(char address,char arg1, char arg2)
 {
-  for(int i=0; (i+2)<nextBuffIndex&&i<sizeof(buff);i+=3)
+  
+}
+
+void talk()
+{
+  int crc;
+  if()
   {
-    SPI.transfer('@');
-    SPI.transfer(buff[i]);
-    SPI.transfer(buff[i+1]);
-    SPI.transfer(buff[i+2]);
-    SPI.transfer({buff[]})
+    for(int i=0; (i+2)<nextTxBuffIndex&&(i+2)<sizeof(txBuff);i+=3)
+    { 
+	  if()
+	  {
+        SPI.transfer('@');
+        SPI.transfer(txBuff[i]);
+        SPI.transfer(txBuff[i+1]);
+        SPI.transfer(txBuff[i+2]);
+	    crc = crc16(&txBuff[i],3);
+        SPI.transfer((uint8_t) (crc & 0xFF ));
+	    SPI.transfer((uint8_t) ((crc >> 8) & 0xFF));
+	  }
+	  else
+	  {
+        addRxBuff(SPI.transfer('@'));
+        addRxBuff(SPI.transfer(txBuff[i]));
+        addRxBuff(SPI.transfer(txBuff[i+1]));
+        addRxBuff(SPI.transfer(txBuff[i+2]));
+	    crc = crc16(&txBuff[i],3);
+        addRxBuff(SPI.transfer((uint8_t) (crc & 0xFF )));
+	    addRxBuff(SPI.transfer((uint8_t) ((crc >> 8) & 0xFF)));
+	  }
+    }
+    nextTxBuffIndex = 0;
   }
-  nextBuffIndex = 0;
+  
+  if()
+  {
+	while()
+    {
+	  addRxBuff(SPI.transfer('e'));
+	}		
+  }
   return;
 }
 /*------------------------------------------------------------------------*/
@@ -78,7 +110,26 @@ void writeByCommand(char address)
     char dataTwo;
     switch(address)
     {
-        case 'l':
+		case 'a':
+			Serial.println("Type lt to request a poll of the altitude sensor.");
+			Serial.flush();
+			Stream.flush();
+			while(Serial.available()<=0);
+			if(input == 'l')
+			{
+				Serial.flush();
+				Stream.flush();
+				while(Serial.available()<=0);
+				if(input == 't')
+				{
+					addBuff(address,'t','l');
+					Serial.println("Altitude poll request added to buffer...");
+				}
+			}
+			else
+				Serial.println("Unexpected input, altitude poll request cancelled.");
+			break;
+/*      case 'l':
       		Serial.println("Confirm launch request by entering the capital letter Y or enter N for no launch.");
             Serial.flush();
       		Stream.flush();
@@ -144,7 +195,7 @@ void writeByCommand(char address)
 			dataOne = (byte) (angle >> 8);
       		dataTwo = (byte) angle;
             writeData(address,dataOne,dataTwo);
-            break;
+            break; */
 
         case 'e':
             dataOne = 'n';
@@ -207,6 +258,7 @@ void parse()
   oldIndx = inputBuff.indexOf('$');
   tempArg2 = (uint8_t)inputBuff.substring(0,oldIndx);
 }
+
 int display(int function, uint8_t data1, uint8_t data2) {
 	
 	unsigned int value = 0;
