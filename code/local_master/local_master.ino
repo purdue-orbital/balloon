@@ -4,14 +4,13 @@
 
 void setup (void)
 {
-
+  Serial.begin (115200);   // debugging
   digitalWrite(SS, HIGH);  // ensure SS stays high for now
 
   // Put SCK, MOSI, SS pins into output mode
   // also put SCK, MOSI into LOW state, and SS into HIGH state.
   // Then put SPI hardware into Master mode and turn SPI on
   SPI.begin ();
-  //SPI.setClockDivider(SPI_CLOCK_DIV8);
   SPI.setBitOrder(MSBFIRST);
   SPI.setDataMode(SPI_MODE0);
 
@@ -38,13 +37,26 @@ void loop (void)
     delay(1);
   }
 
+  int i = 0;
+  char d[30];
   // send test string
   digitalWrite(ATTENTION_OUT, LOW);
   for (const char * p = "Hello, world!\n" ; c = *p; p++)
   {
-    SPI.transfer (c);
+    if (digitalRead(ATTENTION_IN) == LOW)
+    {
+      d[i] = SPI.transfer (c);
+      i++;
+    } 
+    else 
+    {
+      SPI.transfer (c);
+    }
+
     delay(1);
   }
+
+  Serial.println(d);
 
   // send test string
   digitalWrite(ATTENTION_OUT, HIGH);
