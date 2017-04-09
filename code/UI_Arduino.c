@@ -44,7 +44,9 @@ void ignite() {
 
 /*--------------------------------BUFFER----------------------------------*/
 uint8_t txBuff[300];
+uint8_t rxBuff[300];
 int nextTxBuffIndex = 0;
+int nextRxBuffIndex = 0;
 
 void addTxBuff(char address,char arg1, char arg2)
 {
@@ -57,9 +59,11 @@ void addTxBuff(char address,char arg1, char arg2)
   return;
 }
 
-void addRxBuff(char address,char arg1, char arg2)
+void addRxBuff(char data)
 {
-  
+  if(nextRxBuffIndex < sizeof(rxBuff))
+    rxBuff[nextRxBuffIndex++] = data;
+  return;  
 }
 
 void talk()
@@ -234,29 +238,81 @@ uint16_t crc16(uint8_t *data_p, unsigned short length)
       return (crc);
 }
 /*--------------------------------PARSE----------------------------------*/
-void parse()
+void parseRxData()
 {
-  String inputBuff = "";
-  uint8_t tempAd;
-  uint8_t tempArg1;
-  uint8_t tempArg2;
-  int oldIndx = 0;
-  int indx = 0;
-  while(Serial.available()>0)
-  {
-    inputBuff = inputBuff + Serial.read();
+  uint8_t data[6];
+  size_t n = 0;
+  char c;
+	int crc;
+	int i = 0;
+	bool isCorrupt;
+	bool isPacket;
+	bool done=0;
+	int nextStart = 0;
+	char address = 'n';
+	int tLastRead;
+
+  while(i<nextRxBuffIndex && i<sizeof(rxBuff))
+  { 
+    c = rxBuff[i];
+    if(i == sizeof(data))//If the last byte of a possible packet is reached
+    {
+      crc = crc16(&data[1], 3);
+  
+      //if checksum of the entire possible packet is passed
+      if(data[4]==(uint8_t) (crc & 0xFF)&& data[5] == (uint8_t) ((crc >> 8) & 0xFF))
+      {
+        done = 1;
+      }
+      //checksum of packet does not pass
+      else
+      {
+        done = 0;
+        //If there was a startbyte in middle of what was a possible packet
+        if(nextStart!=0)
+        {
+          int j;
+          for(j = nextStart;j < sizeof(data);j++)
+          {
+            data[j-nextStart] = data[j];
+          }
+          i = j - nextStart;
+          nextStart = 0;
+        }
+      }
+    }
+  
+    if(c=='@')
+    {
+      if(!done)
+      {
+        if(i>=sizeof(data))
+        {
+          i = 0;
+          nextStart = 0;
+        }
+        else if(nextStart==0)
+          nextStart = i;   
+      }
+      else
+      {
+        i = 0;
+        nextStart = 0;
+        display(data[1],data[2],data[3]);
+        done = 0;
+        address = data[1];
+      }
+    }   
+    
+    if(!done)
+    {
+      if(i<sizeof(data))
+        data[i]=c;
+      i++;
+    } 
+    tLastRead = millis();       
   }
-  oldIndx = inputBuff.indexOf('$');
-  indx = inputBuff.indexOf('%');
-  tempAd = (uint8_t)inputBuff.substring(oldIndx+1,indx);
-  
-  inputBuff = inputBuff.substring(indx+1);
-  indx = inputBuff.indexOf('%');
-  tempArg1 = (uint8_t)inputBuff.substring(0,indx);
-  
-  inputBuff = inputBuff.substring(indx+1);
-  oldIndx = inputBuff.indexOf('$');
-  tempArg2 = (uint8_t)inputBuff.substring(0,oldIndx);
+  nextRxBuffIndex = 0;
 }
 
 int display(int function, uint8_t data1, uint8_t data2) {
