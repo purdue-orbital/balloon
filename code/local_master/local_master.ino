@@ -2,8 +2,14 @@
 #define ATTENTION_IN 2
 #define ATTENTION_OUT 3
 
-void setup (void)
-{
+char rxBuff [100];
+char txBuff [100];
+volatile byte nextRxBuffIndex;
+volatile byte nextTxBuffIndex;
+volatile byte currentTxBuffIndex;
+
+void setup (void) {
+  
   Serial.begin (115200);   // debugging
   digitalWrite(SS, HIGH);  // ensure SS stays high for now
 
@@ -18,53 +24,62 @@ void setup (void)
   pinMode(ATTENTION_OUT, OUTPUT);
 
   digitalWrite(ATTENTION_OUT, HIGH);
+
+  nextRxBuffIndex = 0;   // buffer empty
+  nextTxBuffIndex = 0;
+  currentTxBuffIndex = 0;
   
 }  // end of setup
 
-
-void loop (void)
-{
+void loop (void) {
 
   char c;
 
   // enable Slave Select
   digitalWrite(SS, LOW);    // SS is pin 10
 
-  // send test string
-  for (const char * p = "NOPE!\n" ; c = *p; p++)
-  {
+  
+  
+
+  /*// send test string
+  for (const char * p = "NOPE!\n" ; c = *p; p++) {
+    
     SPI.transfer (c);
     delay(1);
+    
   }
 
   int i = 0;
   char d[30];
   // send test string
   digitalWrite(ATTENTION_OUT, LOW);
-  for (const char * p = "Hello, world!\n" ; c = *p; p++)
-  {
-    if (digitalRead(ATTENTION_IN) == LOW)
-    {
+  for (const char * p = "Hello, world!\n" ; c = *p; p++) {
+    
+    if (digitalRead(ATTENTION_IN) == LOW) {
+      
       d[i] = SPI.transfer (c);
       i++;
-    } 
-    else 
-    {
+      
+    } else {
+      
       SPI.transfer (c);
+      
     }
 
     delay(1);
+    
   }
 
   Serial.println(d);
 
   // send test string
   digitalWrite(ATTENTION_OUT, HIGH);
-  for (const char * p = "NOPE 2!\n" ; c = *p; p++)
-  {
+  for (const char * p = "NOPE 2!\n" ; c = *p; p++) {
+    
     SPI.transfer (c);
     delay(1);
-  }
+    
+  }*/
 
   // disable Slave Select
   digitalWrite(SS, HIGH);

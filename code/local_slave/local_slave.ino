@@ -2,12 +2,15 @@
 #define ATTENTION_IN 2
 #define ATTENTION_OUT 3
 
-char buf [100];
-volatile byte pos;
+char rxBuff [100];
+char txBuff [100];
+volatile byte nextRxBuffIndex;
+volatile byte nextTxBuffIndex;
+volatile byte currentTxBuffIndex;
 volatile boolean process_it;
 
-void setup (void)
-{
+void setup (void) {
+  
   Serial.begin (115200);   // debugging
 
   // turn on SPI in slave mode
@@ -15,7 +18,6 @@ void setup (void)
 
   // turn on interrupts
   SPCR |= _BV(SPIE);
-
 
   // have to send on master in, *slave out*
   pinMode(MISO, OUTPUT);
@@ -25,7 +27,9 @@ void setup (void)
   digitalWrite(ATTENTION_OUT, HIGH);
   
   // get ready for an interrupt 
-  pos = 0;   // buffer empty
+  nextRxBuffIndex = 0;   // buffer empty
+  nextTxBuffIndex = 0;
+  currentTxBuffIndex = 0;
 
   // now turn on interrupts
   SPI.attachInterrupt();
@@ -34,27 +38,36 @@ void setup (void)
 
 
 // SPI interrupt routine
-ISR (SPI_STC_vect)
-{
-  byte c = SPDR;  // grab byte from SPI Data Register
-  //digitalWrite(ATTENTION_OUT, LOW);
-  SPDR = 'f';
-  //digitalWrite(ATTENTION_OUT, HIGH);
-  
+ISR (SPI_STC_vect) {
+
   // add to buffer if room
-  if (pos < (sizeof (buf) - 1) && digitalRead(ATTENTION_IN) == LOW)
-    buf [pos++] = c;
-      
+  if (nextRxBuffIndex < sizeof(rxBuff) && digitalRead(ATTENTION_IN) == LOW) {
+
+    rxBuff[nextRxBuffIndex++] = SPDR;
+    
+  }
+  
+    // grab byte from SPI Data Register
+  if (nextTxBuffIndex > 0) {
+    
+    digitalWrite(ATTENTION_OUT, LOW);
+    SPDR = txBuff[currentTxBuffIndex]; 
+    currentTxBuffIndex++;
+    digitalWrite(ATTENTION_OUT, HIGH);
+   
+  }
+
 }  // end of interrupt routine SPI_STC_vect
 
 // main loop - wait for flag set in interrupt routine
-void loop (void)
-{
-  if (pos > 0 && digitalRead(ATTENTION_IN) == HIGH)
-    {
-    buf [pos] = 0;  
-    Serial.println (buf);
-    pos = 0;
-    }  // end of flag set
+void loop (void) {
+  
+  if (nextRxBuffIndex > 0 && digitalRead(ATTENTION_IN) == HIGH) {
+    
+    rxBuff[nextRxBuffIndex] = 0;  
+    Serial.println (rxBuff);
+    nextRxBuffIndex = 0;
+    
+  }  // end of flag set
     
 }  // end of loop
