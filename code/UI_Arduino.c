@@ -69,11 +69,11 @@ void addRxBuff(char data)
 void talk()
 {
   int crc;
-  if()
+  if(nextTxBuffIndex > 0)
   {
     for(int i=0; (i+2)<nextTxBuffIndex&&(i+2)<sizeof(txBuff);i+=3)
     { 
-	  if()
+	  if(digitalRead(ATTENTION_IN) == HIGH)
 	  {
         SPI.transfer('@');
         SPI.transfer(txBuff[i]);
@@ -96,14 +96,11 @@ void talk()
     }
     nextTxBuffIndex = 0;
   }
-  
-  if()
-  {
-	while()
-    {
-	  addRxBuff(SPI.transfer('e'));
-	}		
+ 
+  while(nextTxBuffIndex == 0 && digitalRead(ATTENTION_IN) == LOW) {
+    addRxBuff(SPI.transfer('e'));
   }
+
   return;
 }
 /*------------------------------------------------------------------------*/
