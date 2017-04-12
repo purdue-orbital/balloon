@@ -2,14 +2,12 @@
 *TO DO LIST
 * - Finish functions by adding their data to buffer instead of using writeData command
 *	- write high on digital output pin to alert master comm arduino that UI data is available
-* - Rename flushBuff to msgRadio. Add additional functionality:
+* - Create talk(). Add additional functionality:
 *	- attached to interrupt on slave select pin 
 *	- write data from buffer and read data from radio
-* - Create display buffer
-* - Create display function with switch/case structure
+* - Method for flushing rxbuffer
 * - Do we interrupt prompts to display new data?
 *	- Maybe interrupt prompt with new data then print last prompt again.
-* 
 *
 *********************************/
 
