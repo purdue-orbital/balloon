@@ -47,7 +47,6 @@ void setup()
   // get ready for an interrupt 
   nextRxBuffIndex = 0;   // buffer empty
   nextTxBuffIndex = 0;
-  currentTxBuffIndex = 0;
 
   // now turn on interrupts
   SPI.attachInterrupt();
@@ -68,6 +67,10 @@ void loop()
   else
   {
     Serial.println("Input received outside of command. To start a command enter '%' followed by the character corresponding to the command you wish to execute.");
+  }
+
+  if (digitalRead(ATTENTION_IN) == HIGH && nextRxBuffIndex > 0) {
+    parseRxData  
   }
   
 }
@@ -119,54 +122,6 @@ void addRxBuff(char data)
   if(nextRxBuffIndex < sizeof(rxBuff))
     rxBuff[nextRxBuffIndex++] = data;
   return;  
-}
-/*----------------------------------TALK--------------------------------*/
-void talk()
-{
-  int crc;
-  if(nextTxBuffIndex > 0) //if there is something to send then enter 
-  {
-    for(int i=0; (i+2)<nextTxBuffIndex&&(i+2)<sizeof(txBuff);i+=3)//send stuff until there is nothing left to send
-    { 
-      if(digitalRead(ATTENTION_IN) == HIGH)//if there is nothing to receive then just send and don't bother saving spi response
-      {
-        SPI.transfer('@');
-        SPI.transfer(txBuff[i]);
-        SPI.transfer(txBuff[i+1]);
-        SPI.transfer(txBuff[i+2]);
-        crc = crc16(&txBuff[i],3);
-        SPI.transfer((uint8_t) (crc & 0xFF ));
-        SPI.transfer((uint8_t) ((crc >> 8) & 0xFF));
-      }
-      else //there must be something to receive and send so send stuff from txBuff and add response to rxBuff
-      {
-        addRxBuff(SPI.transfer('@'));
-        addRxBuff(SPI.transfer(txBuff[i]));
-        addRxBuff(SPI.transfer(txBuff[i+1]));
-        addRxBuff(SPI.transfer(txBuff[i+2]));
-        crc = crc16(&txBuff[i],3);
-        addRxBuff(SPI.transfer((uint8_t) (crc & 0xFF )));
-        addRxBuff(SPI.transfer((uint8_t) ((crc >> 8) & 0xFF)));
-      }
-    }
-    //flaw in parseRxData requires an '@' at the end of all streams of data
-    if(digitalRead(ATTENTION_IN)==HIGH)
-      SPI.transfer('@');
-    else
-      addRxBuff(SPI.transfer('@'));
-    
-    digitalWrite(ATTENTION_OUT,HIGH);//Let the other arduino know that we no longer have meaningful data to send
-    nextTxBuffIndex = 0;
-  }
- 
-  while(nextTxBuffIndex == 0 && digitalRead(ATTENTION_IN) == LOW) { //Have nothing of meaning to send so send garbage to get data back until there is no data to receive
-    addRxBuff(SPI.transfer('e'));
-  }
-  
-  if(nextRxBuffIndex > 0) //Do something with the data received
-    parseRxData();
-  
-  return;
 }
 /*----------------------------------ACT_ON_USER--------------------------------*/
 void actOnUser(char address) //Previously called writeByCommand

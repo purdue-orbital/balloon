@@ -68,7 +68,6 @@ volatile byte nextTxBuffIndex;
 int lastcalled = 0;
 
 void setup() {
-  if(analogRead(3)>512){board = 2; tOutDelay = 1000;} else {board = 1; tOutDelay = 337;}
   Serial.begin (115200);   // debugging
   digitalWrite(SS, HIGH);  // ensure SS stays high for now
 
@@ -83,28 +82,82 @@ void setup() {
   pinMode(ATTENTION_OUT, OUTPUT);
 
   digitalWrite(ATTENTION_OUT, HIGH);
+  txBuff[1] = '1';
+  txBuff[2] = '2';
+  txBuff[3] = '3';
 
   nextRxBuffIndex = 0;   // buffer empty
-  nextTxBuffIndex = 0;
-
+  nextTxBuffIndex = 3;
 }
 
 void loop(){
-  if(board == 2)
+  /*if(board == 2)
   {
      if(millis()-lastcalled > 100 ){ writeByCommand('6'); lastcalled = millis();}
-       /*
-   * This is where user/automated requests (from this node) to send a packet should be processed. 
-   */
+       
+    //This is where user/automated requests (from this node) to send a packet should be processed. 
+   
   }
   else if(board == 1)
   {
-      /*
-   * This is where user/automated requests (from this node) to send a packet should be processed. 
-   */
+      
+    //This is where user/automated requests (from this node) to send a packet should be processed. 
+   
   }
   writeByCommand('e');
-  extractPackets();
+  extractPackets();*/
+
+    talk();
+
+}
+
+/*----------------------------------TALK--------------------------------*/
+void talk()
+{
+  int crc;
+  if(nextTxBuffIndex > 0) //if there is something to send then enter 
+  {
+    for(int i=0; (i+2)<nextTxBuffIndex&&(i+2)<sizeof(txBuff);i+=3)//send stuff until there is nothing left to send
+    { 
+      if(digitalRead(ATTENTION_IN) == HIGH)//if there is nothing to receive then just send and don't bother saving spi response
+      {
+        SPI.transfer('@');
+        SPI.transfer(txBuff[i]);
+        SPI.transfer(txBuff[i+1]);
+        SPI.transfer(txBuff[i+2]);
+        crc = crc16(&txBuff[i],3);
+        SPI.transfer((uint8_t) (crc & 0xFF ));
+        SPI.transfer((uint8_t) ((crc >> 8) & 0xFF));
+      }
+      else //there must be something to receive and send so send stuff from txBuff and add response to rxBuff
+      {
+        addRxBuff(SPI.transfer('@'));
+        addRxBuff(SPI.transfer(txBuff[i]));
+        addRxBuff(SPI.transfer(txBuff[i+1]));
+        addRxBuff(SPI.transfer(txBuff[i+2]));
+        crc = crc16(&txBuff[i],3);
+        addRxBuff(SPI.transfer((uint8_t) (crc & 0xFF )));
+        addRxBuff(SPI.transfer((uint8_t) ((crc >> 8) & 0xFF)));
+      }
+    }
+    //flaw in parseRxData requires an '@' at the end of all streams of data
+    if(digitalRead(ATTENTION_IN)==HIGH)
+      SPI.transfer('@');
+    else
+      addRxBuff(SPI.transfer('@'));
+    
+    digitalWrite(ATTENTION_OUT,HIGH);//Let the other arduino know that we no longer have meaningful data to send
+    nextTxBuffIndex = 0;
+  }
+ 
+  while(nextTxBuffIndex == 0 && digitalRead(ATTENTION_IN) == LOW) { //Have nothing of meaning to send so send garbage to get data back until there is no data to receive
+    addRxBuff(SPI.transfer('e'));
+  }
+  
+  if(nextRxBuffIndex > 0) //Do something with the data received
+    parseRxData();
+  
+  return;
 }
 
 void extractUIPackets()
