@@ -8,11 +8,15 @@
 * - Method for flushing rxbuffer
 * - Do we interrupt prompts to display new data?
 *	- Maybe interrupt prompt with new data then print last prompt again.
-*
+* - Add proper delays for SPI transfer
+* - Modify talk() so it works as a slave
+* - Finish setup (for example add SPI setup to setup() )
+* - Confirm: Change in ATTENTION_IN or ATTENTION_OUT, if even possible in middle of talk(), will not cause a logical error
 *********************************/
 
-#define IGNITION_IN 2
-#define IGNITION_OUT 8
+#define ATTENTION_IN 9
+#define ATTENTION_OUT 8
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,30 +26,40 @@ typedef unsigned char  uint8_t;
 int display(int function, uint8_t data1, uint8_t data2);
 
 
-void setup() {
-pinMode(IGNITION_IN,INPUT);
-pinMode(IGNITION_OUT,OUTPUT);
-attachInterrupt(digitalPinToInterrupt(IGNITION_IN),ignite,RISING);
-
-Serial.begin(9600);
+void setup() 
+{
+  pinMode(ATTENTION_OUT,OUTPUT);
+  pinMode(ATTENTION_IN,INPUT);
+  Serial.begin(9600);
 }
 
 // the loop routine runs over and over again forever:
-void loop() {
-	parse();
+void loop() 
+{
+  while(Serial.available()<=0);
+  char input = Serial.read();
+  if(input == '%')
+  {
+    while(Serial.available()<=0);
+    input = Serial.read();
+    actOnUser(input);
+  }
+  else
+  {
+    Serial.println("Input received outside of command. To start a command enter '%' followed by the character corresponding to the command you wish to execute.");
+  }
+  if(nextTxBuffIndex>0 || digitalRead(ATTENTION_IN) == 0)
+    talk();
+  
 }
 
-void ignite() {
-  digitalWrite(IGNITION_OUT,HIGH);
-  detachInterrupt(digitalPinToInterrupt(IGNITION_IN));
-}
 
 /*--------------------------------BUFFER----------------------------------*/
 uint8_t txBuff[300];
 uint8_t rxBuff[300];
 int nextTxBuffIndex = 0;
 int nextRxBuffIndex = 0;
-
+/*----------------------------------ADDTXBUFF--------------------------------*/
 void addTxBuff(char address,char arg1, char arg2)
 {
   if((nextTxBuffIndex+2)<sizeof(txBuff))
@@ -54,63 +68,75 @@ void addTxBuff(char address,char arg1, char arg2)
     txBuff[nextTxBuffIndex++] = arg1;
     txBuff[nextTxBuffIndex++] = arg2;
   }
+  
+  digitalWrite(ATTENTION_OUT,LOW);
+  
   return;
 }
-
+/*----------------------------------ADDRXBUFF--------------------------------*/
 void addRxBuff(char data)
 {
   if(nextRxBuffIndex < sizeof(rxBuff))
     rxBuff[nextRxBuffIndex++] = data;
   return;  
 }
-
+/*----------------------------------TALK--------------------------------*/
 void talk()
 {
   int crc;
-  if(nextTxBuffIndex > 0)
+  if(nextTxBuffIndex > 0) //if there is something to send then enter 
   {
-    for(int i=0; (i+2)<nextTxBuffIndex&&(i+2)<sizeof(txBuff);i+=3)
+    for(int i=0; (i+2)<nextTxBuffIndex&&(i+2)<sizeof(txBuff);i+=3)//send stuff until there is nothing left to send
     { 
-	  if(digitalRead(ATTENTION_IN) == HIGH)
-	  {
+      if(digitalRead(ATTENTION_IN) == HIGH)//if there is nothing to receive then just send and don't bother saving spi response
+      {
         SPI.transfer('@');
         SPI.transfer(txBuff[i]);
         SPI.transfer(txBuff[i+1]);
         SPI.transfer(txBuff[i+2]);
-	    crc = crc16(&txBuff[i],3);
+        crc = crc16(&txBuff[i],3);
         SPI.transfer((uint8_t) (crc & 0xFF ));
-	    SPI.transfer((uint8_t) ((crc >> 8) & 0xFF));
-	  }
-	  else
-	  {
+        SPI.transfer((uint8_t) ((crc >> 8) & 0xFF));
+      }
+      else //there must be something to receive and send so send stuff from txBuff and add response to rxBuff
+      {
         addRxBuff(SPI.transfer('@'));
         addRxBuff(SPI.transfer(txBuff[i]));
         addRxBuff(SPI.transfer(txBuff[i+1]));
         addRxBuff(SPI.transfer(txBuff[i+2]));
-	    crc = crc16(&txBuff[i],3);
+        crc = crc16(&txBuff[i],3);
         addRxBuff(SPI.transfer((uint8_t) (crc & 0xFF )));
-	    addRxBuff(SPI.transfer((uint8_t) ((crc >> 8) & 0xFF)));
-	  }
+        addRxBuff(SPI.transfer((uint8_t) ((crc >> 8) & 0xFF)));
+      }
     }
+    //flaw in parseRxData requires an '@' at the end of all streams of data
+    if(digitalRead(ATTENTION_IN)==HIGH)
+      SPI.transfer('@');
+    else
+      addRxBuff(SPI.transfer('@'));
+    
+    digitalWrite(ATTENTION_OUT,HIGH);//Let the other arduino know that we no longer have meaningful data to send
     nextTxBuffIndex = 0;
   }
  
-  while(nextTxBuffIndex == 0 && digitalRead(ATTENTION_IN) == LOW) {
+  while(nextTxBuffIndex == 0 && digitalRead(ATTENTION_IN) == LOW) { //Have nothing of meaning to send so send garbage to get data back until there is no data to receive
     addRxBuff(SPI.transfer('e'));
   }
-
+  
+  if(nextRxBuffIndex > 0) //Do something with the data received
+    parseRxData();
+  
   return;
 }
-/*------------------------------------------------------------------------*/
-/*----------------------------------Write-By-Command--------------------------------*/
-void writeByCommand(char address)
+/*----------------------------------ACT_ON_USER--------------------------------*/
+void actOnUser(char address) //Previously called writeByCommand
 {
     char dataOne;
     char dataTwo;
     switch(address)
     {
 		case 'a':
-			Serial.println("Type lt to request a poll of the altitude sensor.");
+			Serial.println("Type 'lt' to request a poll of the altitude sensor.");
 			Serial.flush();
 			Stream.flush();
 			while(Serial.available()<=0);
@@ -124,83 +150,122 @@ void writeByCommand(char address)
 					addBuff(address,'t','l');
 					Serial.println("Altitude poll request added to buffer...");
 				}
+        else
+          Serial.println("Unexpected input, altitude poll request cancelled.");
 			}
 			else
 				Serial.println("Unexpected input, altitude poll request cancelled.");
 			break;
-/*      case 'l':
-      		Serial.println("Confirm launch request by entering the capital letter Y or enter N for no launch.");
-            Serial.flush();
-      		Stream.flush();
-      		while(Serial.available<=0);
-      		input = Serial.read();
-      		while(input != 'Y' || input != 'N')
-            {
-              Serial.println("Invalid input. Enter capital letter Y to launch or enter N to escape launch.");
-              Serial.flush();
-      		  Stream.flush();
-              while(Serial.available<=0);
-              input = Serial.read();
-            }
-      		if(input == 'N') return;
-      		dataOne = 'Y';
-      		
-      		Serial.println("Launch? Confirm again by entering the capital letter Y, retreat request by entering N.");
-            Serial.flush();
-      		Stream.flush();
-      		while(Serial.available<=0);
-      		input = Serial.read();
-      		while(input != 'Y' || input != 'N')
-            {
-              Serial.println("Invalid input. Confirm again by entering the capital letter Y, retreat request by entering N.");
-              Serial.flush();
-      		  Stream.flush();
-              while(Serial.available<=0);
-              input = Serial.read();
-            }
-      		if(input == 'N') return;
-      		dataTwo = 'Y';
-            writeData(address,dataOne,dataTwo);
-            break;
-      	// --------------------------------------------MOTOR CONTROL-----------------------------------------------
-		case 'c':
-     		unsigned int sum = 0;
-      		unsigned int angle = 0;
-      		unsigned int digit = 0;
+    case 'c':
+			Serial.println("Type 'on' to request an advance of the 1st DOF position.");
+			Serial.println("Type 'xx' to request the 1st DOF to stop.");
+			Serial.flush();
+			Stream.flush();
+			while(Serial.available()<=0);
+			if(input == 'o')
+			{
+				Serial.flush();
+				Stream.flush();
+				while(Serial.available()<=0);
+				if(input == 'n')
+				{
+					addBuff(address,'o','n');
+					Serial.println("Request to advance 1st DOF added to buffer...");
+				}
+        else
+          Serial.println("Unexpected input, advance 1st DOF request cancelled.");
+			}
       
-       		Serial.println("To escape this command type the capital letter N and hit enter. Otherwise input the angle and hit enter.");
-            Serial.flush();
-      		Stream.flush();
-      		while(Serial.available<=0);
-      		while(Serial.available>0)
-            {
-      			input = Serial.read();
-      			while((input < 48 || input > 57) && input!= 'N')
-            	{
-              		Serial.println("Invalid input. Enter digits representing requested angle in base 10 big endian or enter N to escape motor control.");
-              		Serial.flush();
-      		  		Stream.flush();
-              		while(Serial.available<=0);
-              		input = Serial.read();
-            	}
-              	if(input == 'N') return;
-              	sum += (input - 48)*pow(10,digit);//angle stored in little endian base 10
-              	digit++;
-            }
-      		for(digit = 0;digit <= log10(sum),digit++)//convert angle to big endian base 10
-            {
-              	angle += pow(10,log10(sum)-digit)*((sum/pow(10,digit))%10);
-            }
-			dataOne = (byte) (angle >> 8);
-      		dataTwo = (byte) angle;
-            writeData(address,dataOne,dataTwo);
-            break; */
+      else if(input == 'x')
+			{
+				Serial.flush();
+				Stream.flush();
+				while(Serial.available()<=0);
+				if(input == 'x')
+				{
+					addBuff(address,'x','x');
+					Serial.println("Request to STOP 1st DOF added to buffer...");
+				}
+        else
+          Serial.println("Unexpected input, STOP 1st DOF request cancelled.");
+			}
+      
+			else
+				Serial.println("Unexpected input, 1st DOF request cancelled.");
+			break;
+/*  case 'l':
+      Serial.println("Confirm launch request by entering the capital letter Y or enter N for no launch.");
+      Serial.flush();
+      Stream.flush();
+      while(Serial.available<=0);
+      input = Serial.read();
+      while(input != 'Y' || input != 'N')
+        {
+          Serial.println("Invalid input. Enter capital letter Y to launch or enter N to escape launch.");
+          Serial.flush();
+          Stream.flush();
+          while(Serial.available<=0);
+          input = Serial.read();
+        }
+      if(input == 'N') return;
+      dataOne = 'Y';
+      
+      Serial.println("Launch? Confirm again by entering the capital letter Y, retreat request by entering N.");
+      Serial.flush();
+      Stream.flush();
+      while(Serial.available<=0);
+      input = Serial.read();
+      while(input != 'Y' || input != 'N')
+        {
+          Serial.println("Invalid input. Confirm again by entering the capital letter Y, retreat request by entering N.");
+          Serial.flush();
+          Stream.flush();
+          while(Serial.available<=0);
+          input = Serial.read();
+        }
+      if(input == 'N') return;
+      dataTwo = 'Y';
+      writeData(address,dataOne,dataTwo);
+      break;
+    // --------------------------------------------MOTOR CONTROL-----------------------------------------------
+    case 'c':
+      unsigned int sum = 0;
+      unsigned int angle = 0;
+      unsigned int digit = 0;
+  
+      Serial.println("To escape this command type the capital letter N and hit enter. Otherwise input the angle and hit enter.");
+      Serial.flush();
+      Stream.flush();
+      while(Serial.available<=0);
+      while(Serial.available>0)
+      {
+        input = Serial.read();
+        while((input < 48 || input > 57) && input!= 'N')
+        {
+          Serial.println("Invalid input. Enter digits representing requested angle in base 10 big endian or enter N to escape motor control.");
+          Serial.flush();
+          Stream.flush();
+          while(Serial.available<=0);
+          input = Serial.read();
+        }
+        if(input == 'N') return;
+        sum += (input - 48)*pow(10,digit);//angle stored in little endian base 10
+        digit++;
+      }
+      for(digit = 0;digit <= log10(sum),digit++)//convert angle to big endian base 10
+      {
+        angle += pow(10,log10(sum)-digit)*((sum/pow(10,digit))%10);
+      }
+      dataOne = (byte) (angle >> 8);
+      dataTwo = (byte) angle;
+      writeData(address,dataOne,dataTwo);
+      break; */
 
-        case 'e':
-            dataOne = 'n';
-            dataTwo = 'd';            
-            writeData(address,dataOne,dataTwo);
-            break;
+    case 'e':
+        dataOne = 'n';
+        dataTwo = 'd';            
+        writeData(address,dataOne,dataTwo);
+        break;
     }  
     return;
 }
@@ -309,7 +374,7 @@ void parseRxData()
   }
   nextRxBuffIndex = 0;
 }
-
+/*----------------------------------DISPLAY--------------------------------*/
 int display(int function, uint8_t data1, uint8_t data2) {
 	
 	unsigned int value = 0;
@@ -381,3 +446,4 @@ fclose(f1);
 	
 	return 1;
 }
+
