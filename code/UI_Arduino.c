@@ -23,14 +23,35 @@
 #include <time.h>
 #include <sys/time.h>
 typedef unsigned char  uint8_t;
+volatile boolean process_it;
 int display(int function, uint8_t data1, uint8_t data2);
 
 
 void setup() 
 {
-  pinMode(ATTENTION_OUT,OUTPUT);
-  pinMode(ATTENTION_IN,INPUT);
-  Serial.begin(9600);
+  Serial.begin (115200);   // debugging
+
+  // turn on SPI in slave mode
+  SPCR |= _BV(SPE);
+
+  // turn on interrupts
+  SPCR |= _BV(SPIE);
+
+  // have to send on master in, *slave out*
+  pinMode(MISO, OUTPUT);
+  pinMode(ATTENTION_IN, INPUT);
+  pinMode(ATTENTION_OUT, OUTPUT);
+
+  digitalWrite(ATTENTION_OUT, HIGH);
+  
+  // get ready for an interrupt 
+  nextRxBuffIndex = 0;   // buffer empty
+  nextTxBuffIndex = 0;
+  currentTxBuffIndex = 0;
+
+  // now turn on interrupts
+  SPI.attachInterrupt();
+
 }
 
 // the loop routine runs over and over again forever:
@@ -48,8 +69,6 @@ void loop()
   {
     Serial.println("Input received outside of command. To start a command enter '%' followed by the character corresponding to the command you wish to execute.");
   }
-  if(nextTxBuffIndex>0 || digitalRead(ATTENTION_IN) == 0)
-    talk();
   
 }
 
@@ -59,6 +78,27 @@ uint8_t txBuff[300];
 uint8_t rxBuff[300];
 int nextTxBuffIndex = 0;
 int nextRxBuffIndex = 0;
+/*--------------------------------INTERUPT----------------------------------*/
+// SPI interrupt routine
+ISR (SPI_STC_vect) {
+
+  // add to buffer if room
+  if (nextRxBuffIndex < sizeof(rxBuff) && digitalRead(ATTENTION_IN) == LOW) {
+
+    rxBuff[nextRxBuffIndex++] = SPDR;
+    
+  }
+  
+    // grab byte from SPI Data Register
+  if (nextTxBuffIndex > 0) {
+    
+    digitalWrite(ATTENTION_OUT, LOW);
+    SPDR = txBuff[nextTxBuffIndex++]; 
+    digitalWrite(ATTENTION_OUT, HIGH);
+   
+  }
+
+}
 /*----------------------------------ADDTXBUFF--------------------------------*/
 void addTxBuff(char address,char arg1, char arg2)
 {
