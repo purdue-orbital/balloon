@@ -60,18 +60,35 @@ int nextActBuffIndex = 0;
 int board;
 int tOutDelay;
 boolean synched;
+char rxBuff [100];
+char txBuff [100];
+volatile byte nextRxBuffIndex;
+volatile byte nextTxBuffIndex;
 
 int lastcalled = 0;
 
 void setup() {
   if(analogRead(3)>512){board = 2; tOutDelay = 1000;} else {board = 1; tOutDelay = 337;}
-  Serial.begin(9600);
-  Serial1.begin(115200);
-  pinMode(13,OUTPUT);
-  extractPackets();  
-  digitalWrite(13,HIGH);
-  synched = 1;
+  Serial.begin (115200);   // debugging
+  digitalWrite(SS, HIGH);  // ensure SS stays high for now
+
+  // Put SCK, MOSI, SS pins into output mode
+  // also put SCK, MOSI into LOW state, and SS into HIGH state.
+  // Then put SPI hardware into Master mode and turn SPI on
+  SPI.begin ();
+  SPI.setBitOrder(MSBFIRST);
+  SPI.setDataMode(SPI_MODE0);
+
+  pinMode(ATTENTION_IN, INPUT);
+  pinMode(ATTENTION_OUT, OUTPUT);
+
+  digitalWrite(ATTENTION_OUT, HIGH);
+
+  nextRxBuffIndex = 0;   // buffer empty
+  nextTxBuffIndex = 0;
+
 }
+
 void loop(){
   if(board == 2)
   {
@@ -398,7 +415,7 @@ uint8_t chkSum(uint8_t data[], int size) //Shouldn't use for packets larger than
 {
   unsigned int sum = 0;
   for(int i=3;i<(size-1);i++)sum += data[i];//add all bytes except start delimeter, length bytes, and checksum byte
-  return 0xFF-(uint8_t)sum;//return checksum: 0xFF minus this sum ^
+  return 0xFF-(uint8_t)sum;                 //return checksum: 0xFF minus this sum ^
 }
 
 uint16_t crc16(uint8_t *data_p, unsigned short length)
