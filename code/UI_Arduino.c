@@ -298,77 +298,97 @@ void parseRxData()
   uint8_t data[6];
   size_t n = 0;
   char c;
-	int crc;
-	int i = 0;
-	bool isCorrupt;
-	bool isPacket;
-	bool done=0;
-	int nextStart = 0;
-	char address = 'n';
-	int tLastRead;
-
-  while(i<nextRxBuffIndex && i<sizeof(rxBuff))
-  { 
-    c = rxBuff[i];
+  int crc;
+  int i = 0;
+  bool isCorrupt;
+  bool isPacket;
+  bool done=0;
+  int nextStart = 0;
+  int nextStart2 = 0;
+  char address = 'n';
+  int k = 0;
+  int lastUsed = 0;
+  int lastMeaningful = 0;
+  int oldNextRx = nextRxBuffIndex;
+  
+  while((k<oldNextRx && k<sizeof(rxBuff))||(rxBuff[oldNextRx-6]=='@' && !(k<oldNextRx && k<sizeof(rxBuff)) && done!=1))
+  {
+    if(k<oldNextRx && k<sizeof(rxBuff))
+    {
+      c = rxBuff[k];
+      lastUsed = k;
+    }
+    k++;
     if(i == sizeof(data))//If the last byte of a possible packet is reached
     {
+      //Serial.print(1);
+      //NOTE this does not adapt to different sized data packets because sizeof(data) is defined and constant
       crc = crc16(&data[1], 3);
-  
-      //if checksum of the entire possible packet is passed
-      if(data[4]==(uint8_t) (crc & 0xFF)&& data[5] == (uint8_t) ((crc >> 8) & 0xFF))
+      if(data[4]==(uint8_t) (crc & 0xFF)&& data[5] == (uint8_t) ((crc >> 8) & 0xFF))//compare last byte of packet to calculated hash sum
       {
+        //Serial.print(2);
+        i = 0;
+        nextStart = 0;
+	display(data[1],data[2],data[3]);//Assuming AO = 0, getting frame 0x90 and frame 0x10 was transmitted with a payload consisting of only ADDRESS, ARG1,and ARG2. 
+        address = data[1]; //Assuming AO = 0, getting frame 0x90 and frame 0x10 was transmitted with a payload consisting of only ADDRESS, ARG1,and ARG2.
         done = 1;
-      }
-      //checksum of packet does not pass
-      else
+        lastMeaningful = lastUsed-1;//c hasn't actually been added to data[] yet, so the last byte that we know has meaning is the byte before lastUsed. c is added near the end of this loop...
+      }  
+      else//checksum of packet does not pass
       {
-        done = 0;
-        //If there was a startbyte in middle of what was a possible packet
-        if(nextStart!=0)
+        //Serial.print(3);
+        for(int index = 0; index<sizeof(data);index++) 
+          Serial.print((char) data[index]);
+        if(nextStart!=0)//If there was a startbyte in middle of what was a possible packet
         {
+          //Serial.print(4);
           int j;
           for(j = nextStart;j < sizeof(data);j++)
           {
+            //Serial.print(5);
+            if(data[j]=='@') nextStart2 = j-nextStart; //if there is another start even after shifting everything over....
             data[j-nextStart] = data[j];
           }
           i = j - nextStart;
-          nextStart = 0;
+          nextStart = nextStart2;
         }
+        done = 0;
       }
     }
-  
-    if(c=='@')
+    
+    if(c == '@' && i != 0)
     {
-      if(!done)
+      //Serial.print(6);
+      if(i>sizeof(data))
       {
-        if(i>=sizeof(data))
-        {
-          i = 0;
-          nextStart = 0;
-        }
-        else if(nextStart==0)
-          nextStart = i;   
-      }
-      else
-      {
+        //Serial.print(7);
         i = 0;
         nextStart = 0;
-        display(data[1],data[2],data[3]);
-        done = 0;
-        address = data[1];
       }
-    }   
-    
-    if(!done)
+      else if(nextStart==0)
+      {
+        nextStart = i;
+        //Serial.print(8);
+      }
+    }
+
+    if(i<sizeof(data))
     {
-      if(i<sizeof(data))
-        data[i]=c;
+      data[i]=c;
+      //Serial.print(9);
       i++;
-    } 
-    tLastRead = millis();       
+    }
   }
-  nextRxBuffIndex = 0;
+  noInterrupts();
+  for(k = lastMeaningful+1; k<nextRxBuffIndex && k<sizeof(rxBuff);k++)
+  {
+    rxBuff[k-lastMeaningful-1] = rxBuff[k];
+  }
+  nextRxBuffIndex = k-lastMeaningful-1;
+  interrupts();
+  return;
 }
+
 /*----------------------------------DISPLAY--------------------------------*/
 int display(int function, uint8_t data1, uint8_t data2) {
 	
