@@ -70,7 +70,7 @@ void loop (void)
 {
 
   char c;
-  uint8_t pay[5] = {0x48,0x65,0x6C,0x6F,0x21};
+  uint8_t pay[7] = {0x00,0x00,(uint8_t) 'l',(uint8_t) 'z',(uint8_t) 'p',(uint8_t) 'l',(uint8_t) 'z'};
   
   // enable Slave Select
   digitalWrite(SS, LOW);    // SS is pin 10
@@ -82,7 +82,7 @@ void loop (void)
 
   delay (15);  // 1 seconds delay 
 }  // end of loop
-
+//uint8_t frameId = 0x01;
 void writeData(uint8_t payload[],int len)
 {
   uint8_t data[len+15];   
@@ -109,7 +109,8 @@ void writeData(uint8_t payload[],int len)
   for (int i=0;i < sizeof(data);i++) 
   {
         SPI.transfer(data[i]);
-        //Serial.println(data[i],HEX);    
+        //Serial.println(data[i],HEX);
+        //delay(5);    
   }
   //Serial.println("");
 }
