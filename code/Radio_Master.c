@@ -11,14 +11,15 @@
 #define DEST_6 10
 #define DEST_7 11
 #define DEST_8 12
-#define DEST_NET_1 13
-#define DEST_NET_2 14
-#define RADIUS 15
-#define OPTIONS 16
-#define ADDRESS 17
-#define ARG1 18
-#define ARG2 19
-#define CHK_SUM 20
+#define OPTIONS 13
+#define DATA_1 14
+#define DATA_2 15
+#define DATA_3 16
+#define DATA_4 17
+#define DATA_5 18
+#define DATA_6 19
+#define DATA_7 20
+
 
 //Destination Addy (Other node's 64-bit MAC) 
 #define DEST_1_BYTE 0x00
@@ -351,47 +352,35 @@ void writeByCommand(char address)
     return;
 }
 
-void writeData(char address, char dataOne, char dataTwo)
+void writeData(uint8_t payload[],int len)
 {
-    uint8_t data[21];
-    
-    data[START_DELIMITER] = START_BYTE;
-	data[LENGTH_1] = 0x00; //MSB. See next line
-	data[LENGTH_2] = 0x11; //LSB. Length 17 Bytes in packet EXCLUDING start delimiter,length bytes, and check sum.
-	data[FRAME_TYPE] = 0x10; //Transmit Request Frame
-	data[FRAME_ID] = 0x00; //Each packet does not have an individualized ID, confirmation packet will not be sent back
-	data[DEST_1] = DEST_1_BYTE;
-	data[DEST_2] = DEST_2_BYTE;
-	data[DEST_3] = DEST_3_BYTE;
-	data[DEST_4] = DEST_4_BYTE;
-	data[DEST_5] = DEST_5_BYTE;
-	data[DEST_6] = DEST_6_BYTE;
-	data[DEST_7] = DEST_7_BYTE;
-	data[DEST_8] = DEST_8_BYTE;
-	data[DEST_NET_1] = 0xFF; //Not sure why, user guide said to do this. Maybe only when not broadcasting?
-	data[DEST_NET_2] = 0xFE; //Same^
-	data[RADIUS] = 0x00; //Set to max hops value. Not sure if this matters when not broadcasting...
-	data[OPTIONS] = 0x00; //Not sure if there are any other options for this frame.
-    data[ADDRESS] = address;
-    data[ARG1] = dataOne;
-    data[ARG2] = dataTwo;
-    data[CHK_SUM] = chkSum(data,21);
-	
-    /* Serial1.print("\nYo this is what I'm sending back to master: "); */
-    int i;
-    for (i=0;i < sizeof(data);i++) 
-    {
-          SPI.transfer(data[i]);
-          /* Serial1.print((char)data[i]);    */
-      //fprintf(yo, "%c",(char)data[i]);
-        //printf("%d\n",data[i]);
-    }
-    /* Serial1.println(""); */
-    /*if(address=='e') //Previously implemented in wired protocol, however after adapting code to match the radio protocol this should be artificially added, locally to the data stream on the receiving arduino when the radio appears to no longer have data available. 
-    {
-      Serial1.print('@');
-    }*/
+  uint8_t data[len+15];   
+  data[START_DELIMITER] = START_BYTE;
+  data[LENGTH_1] = (uint8_t) (len+11)>>8; //MSB. See next line
+  data[LENGTH_2] = (uint8_t) (len+11); //LSB. Length 17 Bytes in packet EXCLUDING start delimiter,length bytes, and check sum.
+  data[FRAME_TYPE] = 0x00;//0x10; //Transmit Request Frame
+  data[FRAME_ID] = 0x00;//0x00; //Each packet does not have an individualized ID, confirmation packet will not be sent back
+  data[DEST_1] = DEST_1_BYTE;
+  data[DEST_2] = DEST_2_BYTE;
+  data[DEST_3] = DEST_3_BYTE;
+  data[DEST_4] = DEST_4_BYTE;
+  data[DEST_5] = DEST_5_BYTE;
+  data[DEST_6] = DEST_6_BYTE;
+  data[DEST_7] = DEST_7_BYTE;
+  data[DEST_8] = DEST_8_BYTE;
+  data[OPTIONS] = 0x00;
+  for(int i = 0; i<len;i++)
+  {
+    data[i+OPTIONS+1] = payload[i];
+  }
+  data[len+14] = chkSum(data,len+15);
 
+  for (int i=0;i < sizeof(data);i++) 
+  {
+        SPI.transfer(data[i]);
+        //Serial.println(data[i],HEX);    
+  }
+  //Serial.println("");
 }
 
 void actOnPacket(char address, char dataOne, char dataTwo)
