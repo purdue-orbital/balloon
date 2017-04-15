@@ -399,7 +399,8 @@ void writeData(uint8_t payload[],int len)
   for (int i=0;i < sizeof(data);i++) 
   {
         SPI.transfer(data[i]);
-        //Serial.println(data[i],HEX);    
+        //Serial.println(data[i],HEX);
+        //delay(5);    
   }
   //Serial.println("");
 }
