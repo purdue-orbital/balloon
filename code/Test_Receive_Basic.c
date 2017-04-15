@@ -22,6 +22,7 @@
 #define DATA_6 19
 #define DATA_7 20
 
+#define RECEIVE_SIZE 22
 
 //Destination Addy (Other node's 64-bit MAC) 
 #define DEST_1_BYTE 0x00
@@ -68,7 +69,7 @@ void loop()
 {
   digitalWrite(SS,LOW);
   delay(2);
-  for(int i = 0; i<100 && digitalRead(RAD_ATTN)==HIGH;i++)
+  for(int i = 0; i<100 && digitalRead(RAD_ATTN)==LOW;i++)
     addRadRxBuff(SPI.transfer(0x00));
   if(nextRadRxBuffIndex>0)
     parseRadData();
@@ -76,72 +77,40 @@ void loop()
   digitalWrite(SS,HIGH);
   delay(3);
 }
-/*--------------------------------Rad-Talk--------------------------------*/
-/*void talk()
-{
-  int crc;
-  int stepSize;
-  if(nextRadTxBuffIndex > 0) //if there is something to send then enter 
-  {
-    if(nextRadTxBuffIndex>18)
-      stepSize = 18;
-    else
-      stepSize = nextRadTxBuffIndex-1;
-    for(int i=0; i<nextRadTxBuffIndex;i+=stepSize)//send stuff until there is nothing left to send
-    { 
-      if(digitalRead(ATTENTION_IN) == HIGH)//if there is nothing to receive then just send and don't bother saving spi response
-      {
-        writeData(&radTxBuff[i],stepSize);
-      }
-      else //there must be something to receive and send so send stuff from txBuff and add response to rxBuff
-      {
-        addRxBuff(SPI.transfer('@'));
-        addRxBuff(SPI.transfer(txBuff[i]));
-        addRxBuff(SPI.transfer(txBuff[i+1]));
-        addRxBuff(SPI.transfer(txBuff[i+2]));
-        crc = crc16(&txBuff[i],3);
-        addRxBuff(SPI.transfer((uint8_t) (crc & 0xFF )));
-        addRxBuff(SPI.transfer((uint8_t) ((crc >> 8) & 0xFF)));
-      }
-    }
-    //flaw in parseRxData requires an '@' at the end of all streams of data
-    if(digitalRead(ATTENTION_IN)==HIGH)
-      SPI.transfer('@');
-    else
-      addRxBuff(SPI.transfer('@'));
-    
-    digitalWrite(ATTENTION_OUT,HIGH);//Let the other arduino know that we no longer have meaningful data to send
-    nextTxBuffIndex = 0;
-  }
- 
-  while(nextTxBuffIndex == 0 && digitalRead(ATTENTION_IN) == LOW) { //Have nothing of meaning to send so send garbage to get data back until there is no data to receive
-    addRxBuff(SPI.transfer('e'));
-  }
-  
-  if(nextRxBuffIndex > 0) //Do something with the data received
-    parseRxData();
-  
-  return;
-}*/
 /*--------------------------------BUFFER----------------------------------*/
 /*----------------------------------ADDTXBUFF--------------------------------*/
 void addArdTxBuff(uint8_t data[],int size)
 {
   for(int i = 0; i<size && nextArdTxBuffIndex<sizeof(ardTxBuff);i++)
+  {
     ardTxBuff[nextArdTxBuffIndex++] = data[i];
+    //Serial.print(data[i]);
+    //Serial.println(" was added to ardTxBuff");
+  }
   return;
 }
 /*----------------------------------ADDRXBUFF--------------------------------*/
 void addRadRxBuff(char data)
 {
   if(nextRadRxBuffIndex < sizeof(radRxBuff))
+  {
     radRxBuff[nextRadRxBuffIndex++] = data;
+  }
+  else
+  {
+    nextRadRxBuffIndex = 0;
+    radRxBuff[nextRadRxBuffIndex++] = data;
+  }
+  Serial.print(data,HEX);
+  Serial.print(" ");
+  Serial.print((char) data);
+  Serial.println(" was added to radRxBuff");
   return;  
 }
 /*-------------------------PARSE-RADIO-DATA----------------------------*/
 void parseRadData()
 {
-  uint8_t data[21];
+  uint8_t data[RECEIVE_SIZE];
   size_t n = 0;
   char c;
   int chk;
@@ -156,8 +125,10 @@ void parseRadData()
   int lastUsed = 0;
   int lastMeaningful = 0;
   int oldNextRadRx = nextRadRxBuffIndex;
+
+  //Serial.println("Entering parse... ");
   
-  while((k<oldNextRadRx && k<sizeof(radRxBuff))||(radRxBuff[oldNextRadRx-6]==START_BYTE && !(k<oldNextRadRx && k<sizeof(radRxBuff)) && done!=1))
+  while(((k<oldNextRadRx && k<sizeof(radRxBuff))||(radRxBuff[oldNextRadRx-6]==START_BYTE && !(k<oldNextRadRx && k<sizeof(radRxBuff)) && done!=1))&& ((k-lastUsed)<=sizeof(data)))
   {
     if(k<oldNextRadRx && k<sizeof(radRxBuff))
     {
@@ -167,23 +138,27 @@ void parseRadData()
     k++;
     if(i == sizeof(data))//If the last byte of a possible packet is reached
     {
-      //Serial.print(1);
+      Serial.print(1);
       //NOTE this does not adapt to different sized data packets because sizeof(data) is defined and constant
-      chk = chkSum(&data[1], sizeof(data));
-      if(data[sizeof(data)]==chk)//compare last byte of packet to calculated hash sum
+      chk = chkSum(&data[0], sizeof(data));
+      Serial.print("Generated chk: ");
+      Serial.print(chk,HEX);
+      Serial.print(" chk found in packet: ");
+      Serial.println(data[sizeof(data)-1],HEX);
+      if(data[sizeof(data)-1]==chk)//compare last byte of packet to calculated hash sum
       {
-        //Serial.print(2);
+        Serial.print(2);
         i = 0;
         nextStart = 0;
-        addArdTxBuff(&data[14],6);//Assuming AO = 0, getting frame 0x90 and frame 0x10 was transmitted with a payload consisting of only ADDRESS, ARG1,and ARG2. 
-        printArray(&data[14],6);
-        address = data[15]; //Assuming AO = 0, getting frame 0x90 and frame 0x10 was transmitted with a payload consisting of only ADDRESS, ARG1,and ARG2.
+        addArdTxBuff(&data[14],7);//Assuming AO = 0, getting frame 0x90 and frame 0x10 was transmitted with a payload consisting of only ADDRESS, ARG1,and ARG2. 
+        printArray(&data[14],7);
+        address = data[14]; //Assuming AO = 0, getting frame 0x90 and frame 0x10 was transmitted with a payload consisting of only ADDRESS, ARG1,and ARG2.
         done = 1;
         lastMeaningful = lastUsed-1;//c hasn't actually been added to data[] yet, so the last byte that we know has meaning is the byte before lastUsed. c is added near the end of this loop...
       }  
       else//checksum of packet does not pass
       {
-        //Serial.print(3);
+        Serial.print(3);
         //for(int index = 0; index<sizeof(data);index++) 
           //Serial.print((char) data[index]);
         if(nextStart!=0)//If there was a startbyte in middle of what was a possible packet
@@ -237,7 +212,10 @@ void parseRadData()
 void printArray(uint8_t data[],int size)
 {
   for(int i=0;i<size;i++)
-    Serial.print(data[i]);
+  {
+    Serial.print((char) data[i]);
+    Serial.println(",");
+  }
 }
 uint8_t chkSum(uint8_t data[], int size) //Shouldn't use for packets larger than 260 bytes total in size, unsigned int sum may rollover. Technically should still work though...?
 {
@@ -245,3 +223,5 @@ uint8_t chkSum(uint8_t data[], int size) //Shouldn't use for packets larger than
   for(int i=3;i<(size-1);i++)sum += data[i];//add all bytes except start delimeter, length bytes, and checksum byte
   return 0xFF-(uint8_t)sum;                 //return checksum: 0xFF minus this sum ^
 }
+
+
