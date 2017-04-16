@@ -71,11 +71,13 @@ void loop()
   delay(2);
   for(int i = 0; i<100 && digitalRead(RAD_ATTN)==LOW;i++)
     addRadRxBuff(SPI.transfer(0x00));
+  Serial.print("about to parse");
   if(nextRadRxBuffIndex>0)
     parseRadData();
   delay(3);
   digitalWrite(SS,HIGH);
   delay(3);
+  
 }
 /*--------------------------------BUFFER----------------------------------*/
 /*----------------------------------ADDTXBUFF--------------------------------*/
@@ -128,7 +130,7 @@ void parseRadData()
 
   //Serial.println("Entering parse... ");
   
-  while(((k<oldNextRadRx && k<sizeof(radRxBuff))||(radRxBuff[oldNextRadRx-6]==START_BYTE && !(k<oldNextRadRx && k<sizeof(radRxBuff)) && done!=1))&& ((k-lastUsed)<=sizeof(data)))
+  while(((k<oldNextRadRx && k<sizeof(radRxBuff))||(radRxBuff[oldNextRadRx-sizeof(data)]==START_BYTE && !(k<oldNextRadRx && k<sizeof(radRxBuff)) && done!=1))&& ((k-lastUsed)<=sizeof(data)))
   {
     if(k<oldNextRadRx && k<sizeof(radRxBuff))
     {
@@ -138,27 +140,28 @@ void parseRadData()
     k++;
     if(i == sizeof(data))//If the last byte of a possible packet is reached
     {
-      Serial.print(1);
+      //Serial.print(1);
       //NOTE this does not adapt to different sized data packets because sizeof(data) is defined and constant
       chk = chkSum(&data[0], sizeof(data));
-      Serial.print("Generated chk: ");
+      /*Serial.print("Generated chk: ");
       Serial.print(chk,HEX);
       Serial.print(" chk found in packet: ");
       Serial.println(data[sizeof(data)-1],HEX);
+      printArray(&data[0],sizeof(data));*/
       if(data[sizeof(data)-1]==chk)//compare last byte of packet to calculated hash sum
       {
-        Serial.print(2);
+        //Serial.print(2);
         i = 0;
         nextStart = 0;
-        addArdTxBuff(&data[14],7);//Assuming AO = 0, getting frame 0x90 and frame 0x10 was transmitted with a payload consisting of only ADDRESS, ARG1,and ARG2. 
-        printArray(&data[14],7);
+        addArdTxBuff(&data[14],6);//Assuming AO = 0, getting frame 0x90 and frame 0x10 was transmitted with a payload consisting of only ADDRESS, ARG1,and ARG2. 
+        printArray(&data[14],6);
         address = data[14]; //Assuming AO = 0, getting frame 0x90 and frame 0x10 was transmitted with a payload consisting of only ADDRESS, ARG1,and ARG2.
         done = 1;
         lastMeaningful = lastUsed-1;//c hasn't actually been added to data[] yet, so the last byte that we know has meaning is the byte before lastUsed. c is added near the end of this loop...
       }  
       else//checksum of packet does not pass
       {
-        Serial.print(3);
+        //Serial.print(3);
         //for(int index = 0; index<sizeof(data);index++) 
           //Serial.print((char) data[index]);
         if(nextStart!=0)//If there was a startbyte in middle of what was a possible packet
@@ -223,5 +226,4 @@ uint8_t chkSum(uint8_t data[], int size) //Shouldn't use for packets larger than
   for(int i=3;i<(size-1);i++)sum += data[i];//add all bytes except start delimeter, length bytes, and checksum byte
   return 0xFF-(uint8_t)sum;                 //return checksum: 0xFF minus this sum ^
 }
-
 
