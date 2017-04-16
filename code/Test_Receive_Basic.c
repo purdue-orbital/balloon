@@ -73,13 +73,16 @@ void loop()
   delay(2);
   for(int i = 0; i<100 && digitalRead(RAD_ATTN)==LOW;i++)
     addRadRxBuff(SPI.transfer(0x00));
-  Serial.print("about to parse");
+  //Serial.print("about to parse");
   if(nextRadRxBuffIndex>0)
     parseRadData();
   delay(3);
   digitalWrite(SS,HIGH);
   if(nextArdTxBuffIndex>0)
+  {
+    Serial.println("something was in buff index");
     parseTxData();
+  }
   delay(3);
   
 }
@@ -248,9 +251,10 @@ void parseTxData()
   int lastUsed = 0;
   int lastMeaningful = 0;
   int oldNextTx = nextArdTxBuffIndex;
-  
+  Serial.print(-1);
   while((k<oldNextTx && k<sizeof(ardTxBuff))||(ardTxBuff[oldNextTx-6]=='@' && !(k<oldNextTx && k<sizeof(ardTxBuff)) && done!=1))
   {
+    Serial.print(0);
     if(k<oldNextTx && k<sizeof(ardTxBuff))
     {
       c = ardTxBuff[k];
@@ -259,12 +263,12 @@ void parseTxData()
     k++;
     if(i == sizeof(data))//If the last byte of a possible packet is reached
     {
-      //Serial.print(1);
+      Serial.print(1);
       //NOTE this does not adapt to different sized data packets because sizeof(data) is defined and constant
       crc = crc16(&data[1], 3);
       if(data[4]==(uint8_t) (crc & 0xFF)&& data[5] == (uint8_t) ((crc >> 8) & 0xFF))//compare last byte of packet to calculated hash sum
       {
-        //Serial.print(2);
+        Serial.print(2);
         i = 0;
         nextStart = 0;
         actOnPacket(data[1],data[2],data[3]);//Assuming AO = 0, getting frame 0x90 and frame 0x10 was transmitted with a payload consisting of only ADDRESS, ARG1,and ARG2. 
@@ -274,16 +278,16 @@ void parseTxData()
       }  
       else//checksum of packet does not pass
       {
-        //Serial.print(3);
-        //for(int index = 0; index<sizeof(data);index++) 
-          //Serial.print((char) data[index]);
+        Serial.print(3);
+        for(int index = 0; index<sizeof(data);index++) 
+          Serial.print((char) data[index]);
         if(nextStart!=0)//If there was a startbyte in middle of what was a possible packet
         {
-          //Serial.print(4);
+          Serial.print(4);
           int j;
           for(j = nextStart;j < sizeof(data);j++)
           {
-            //Serial.print(5);
+            Serial.print(5);
             if(data[j]=='@') nextStart2 = j-nextStart; //if there is another start even after shifting everything over....
             data[j-nextStart] = data[j];
           }
@@ -296,24 +300,24 @@ void parseTxData()
     
     if(c == '@' && i != 0)
     {
-      //Serial.print(6);
+      Serial.print(6);
       if(i>sizeof(data))
       {
-        //Serial.print(7);
+        Serial.print(7);
         i = 0;
         nextStart = 0;
       }
       else if(nextStart==0)
       {
         nextStart = i;
-        //Serial.print(8);
+        Serial.print(8);
       }
     }
 
     if(i<sizeof(data))
     {
       data[i]=c;
-      //Serial.print(9);
+      Serial.print(9);
       i++;
     }
   }
@@ -329,6 +333,10 @@ void parseTxData()
 
 void actOnPacket(uint8_t address, uint8_t arg1, uint8_t arg2)
 {
+  Serial.println("here's yo deciphered packet ");
+  Serial.println((char)address);
+  Serial.println((char)arg1);
+  Serial.println((char)arg2);
   switch(address)
   {
     case 'c':
